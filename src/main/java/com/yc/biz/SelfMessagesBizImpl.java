@@ -59,8 +59,8 @@ public class SelfMessagesBizImpl implements SelfMessagesBiz {
         String fileName = System.currentTimeMillis()+"."+OriginalFilename.substring(OriginalFilename.lastIndexOf(".")+1);
         //文件存放路径。现在存在本地，之后可以存在数据库中  路径的最后别忘了加两个\\ 如果不加，字符串拼接会拼到父目录里面去
         session.setAttribute("touxiang",fileName);
-        //String filePath = "D:\\idea\\学生信息\\src\\main\\resources\\static\\img\\";
-        String filePath = "D:\\tomcat85\\webapps\\img\\";
+//        String filePath = "D:\\tomcat85\\webapps\\img\\";
+        String filePath = "\\var\\lib\\tomcat8\\webapps\\images\\";
         // String filePath = "182.92.151.98:8080\\images\\";
         File dest = new File(filePath+fileName);
         //如果不存在该目录就创建文件夹
