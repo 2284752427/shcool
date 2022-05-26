@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>学院老师操作</title>
+    <!-- 引入样式 -->
+    <script type="text/javascript" src="js/jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="js/vue.js"></script>
+    <script type="text/javascript" src="js/axios.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+
+        .el-aside {
+            color: #333;
+            position: relative;
+        }
+        .el-submenu__title{
+            width: 200px;
+        }
+        .el-menu--inline{
+            width: 200px;
+        }
+        .el-carousel__container{
+            height: 600px;
+            margin-top: 10px;
+        }
+        .el-menu{
+            width: 199px;
+            background-image: linear-gradient(45deg, #ee9ca7 0%, #ffdde1 100%);
+        }
+        .header{
+            font-size: 55px;
+            font-style:italic;
+            font-weight: bolder;
+            /*height: 55px;*/
+            padding-right:100px;
+            color:#C0C4CC;
+        }
+        .el-dropdown-link {
+            cursor: pointer;
+            color: #409EFF;
+        }
+
+
+    </style>
+
+
+    <body>
+        <div id="app">
+            <el-container style="height: 730px; border: 1px solid #eee;" >
+                <el-aside width="200px" style="background-image: linear-gradient(45deg, #ee9ca7 0%, #ffdde1 100%);margin-left: 0px;">
+                    <el-col :span="12">
+                        <h5 style="text-align: center;font-size: 20px;font-style: italic;padding-left: 70px">目录</h5>
+                        <el-menu
+                                default-active="1"
+                                class="el-menu-vertical-demo"
+                                text-color="black"
+                                unique-opened="true">
+
+                            <el-menu-item index="1" style="width: 200px" @click="tosy()"><i class="el-icon-location"></i>&nbsp&nbsp&nbsp&nbsp首页</el-menu-item>
+                            <el-menu-item index="2" style="width: 200px" @click="routerteacherfindsmage"><i class="el-icon-location"></i>&nbsp学生信息</el-menu-item>
+                            <el-submenu index="3">
+                                <template slot="title">
+                                    <i class="el-icon-location"></i>
+                                    <span>学生成绩</span>
+                                </template>
+                                <el-menu-item-group>
+                                    <el-menu-item index="3-1" @click="studentsgrades()">考试成绩</el-menu-item>
+                                    <el-menu-item index="3-2" @click="studentexamination">补考成绩</el-menu-item>
+                                    <el-menu-item index="3-3" @click="studentrestart">重修成绩</el-menu-item>
+                                </el-menu-item-group>
+                            </el-submenu>
+                            <el-menu-item index="4" style="width: 200px" @click="byteacherid"><i class="el-icon-location"></i>&nbsp我的课表</el-menu-item>
+                            <el-menu-item index="5" style="width: 200px" @click="teachercourse"><i class="el-icon-location"></i>&nbsp我的课程</el-menu-item>
+                        </el-menu>
+                    </el-col>
+                    </el-menu>
+                </el-aside>
+
+                <el-container style="background-image: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);">
+                    <el-main style="margin-top: 10px;margin-left: 10px">
+                        <template v-if="tb_1">
+                            <el-carousel :interval="3000" arrow="always" >
+                                <el-carousel-item v-for="item in imagessrc" :key="item">
+                                    <img :src="item"style="height: 600px;width: 1270px;background-repeat: no-repeat">
+                                </el-carousel-item>
+                            </el-carousel>
+                        </template>
+                        <iframe v-if="tb_2" src="teacherfindsmage.html" height="650px" width="1250px" frameborder="0" style="float: left"></iframe>
+                        <iframe v-if="tb_3" src="studentsgrades.html" height="650px" width="1250px" frameborder="0" style="float: left"></iframe>
+                        <iframe v-if="tb_4" src="studentsexamination.html" height="650px" width="1250px" frameborder="0" style="float: left"></iframe>
+                        <iframe v-if="tb_5" src="studentsrestart.html" height="650px" width="1250px" frameborder="0" style="float: left"></iframe>
+                        <iframe v-if="tb_6" src="teacherfindcourse.html" height="650px" width="1250px" frameborder="0" style="float: left"></iframe>
+                        <iframe v-if="tb_7" src="teacherbyteacherid.html" height="650px" width="1250px" frameborder="0" style="float: left"></iframe>
+                    </el-main>
+                </el-container>
+            </el-container>
+        </div>
+
+
+
+
+     <script>
+         var app = new Vue({
+             el:"#app",
+             data:{
+                 tb_1:true,
+                 tb_2:false,
+                 tb_3:false,
+                 tb_4:false,
+                 tb_5:false,
+                 tb_6:false,
+                 tb_7:false,
+                 imagessrc:['img/tu1.jpg','img/tu2.jpg','img/tu3.jpg','img/tu4.jpg'],
+             },
+             methods: {
+                 routerteacherfindsmage(){
+                     this.tb_1 = false;
+                     this.tb_2 =true;
+                     this.tb_3 = false;
+                     this.tb_4=false;
+                     this.tb_5=false;
+                     this.tb_6=false;
+                     this.tb_7 = false;
+                 },
+                 tosy(){
+                     this.tb_1 = true;
+                     this.tb_2 = false;
+                     this.tb_3 = false;
+                     this.tb_4=false;
+                     this.tb_5=false;
+                     this.tb_6=false;
+                     this.tb_7 = false;
+                 },
+                 studentsgrades(){
+                     this.tb_1 = false;
+                     this.tb_2 = false;
+                     this.tb_3 = true;
+                     this.tb_4=false;
+                     this.tb_5=false;
+                     this.tb_6=false;
+                     this.tb_7 = false;
+                 },
+                 studentexamination(){
+                     this.tb_1 = false;
+                     this.tb_2 = false;
+                     this.tb_3 = false;
+                     this.tb_4=true;
+                     this.tb_5=false;
+                     this.tb_6=false;
+                     this.tb_7 = false;
+                 },
+                 studentrestart(){
+                     this.tb_1 = false;
+                     this.tb_2 = false;
+                     this.tb_3 = false;
+                     this.tb_4=false;
+                     this.tb_5=true;
+                     this.tb_6=false;
+                     this.tb_7 = false;
+                 },
+                 teachercourse(){
+                     this.tb_1 = false;
+                     this.tb_2 = false;
+                     this.tb_3 = false;
+                     this.tb_4=false;
+                     this.tb_5=false;
+                     this.tb_6=true;
+                     this.tb_7 = false;
+                 },
+                 byteacherid(){
+                     this.tb_1 = false;
+                     this.tb_2 = false;
+                     this.tb_3 = false;
+                     this.tb_4=false;
+                     this.tb_5=false;
+                     this.tb_6=false;
+                     this.tb_7 = true;
+                 }
+             },
+             mounted:function(){
+
+             },
+             beforeDestroy() {
+
+             }
+         })
+     </script>
+
+
+
+
+
+</body>
+</html>

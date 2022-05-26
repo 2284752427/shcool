@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!-- 引入样式 -->
+    <script type="text/javascript" src="js/jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="js/vue.js"></script>
+    <script type="text/javascript" src="js/axios.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+</head>
+<style>
+    td{
+        text-align: center;
+        font-weight: bold;
+        font-size: 12px;
+        color: gray;
+
+    }
+    .editui{
+        position: absolute;
+        left:200px;
+        top: 50px;
+        background-color: rgba(255,204,204,0.9);
+        width: 800px;
+        border-radius: 10px;
+    }
+    /*.insert{*/
+    /*    position: absolute;*/
+    /*    left:200px;*/
+    /*    top: 100px;*/
+    /*    background-color: rgba(255,204,204,0.9);*/
+    /*    width: 800px;*/
+    /*    border-radius: 10px;*/
+    /*}*/
+    .editui p{
+        text-align: center;
+    }
+    .insert p{
+        text-align: center;
+    }
+    /*#xedit{*/
+    /*    position: absolute;*/
+    /*    left: 775px;*/
+    /*    !*border-radius:50%;*!*/
+    /*    !*text-align: center;*!*/
+    /*    !*width: 20px;*!*/
+    /*    !*border:1px paleturquoise solid;*!*/
+    /*    !*cursor: pointer;*!*/
+
+    /*}*/
+    /*#insertx{*/
+    /*    position: absolute;*/
+    /*    left: 375px;*/
+    /*    border-radius:50%;*/
+    /*    text-align: center;*/
+    /*    width: 20px;*/
+    /*    border:1px paleturquoise solid;*/
+    /*    cursor: pointer;*/
+    /*}*/
+    .editui p input{
+        border-radius: 10px;
+        height: 30px;
+        outline:medium;
+        width: 200px;
+    }
+    /*.insert p input {*/
+    /*    height: 40px;*/
+    /*    outline: medium;*/
+    /*    width: 220px;*/
+    /*}*/
+    .editui p input:focus{
+        border: 1px solid deepskyblue;
+    }
+    /*.insert p input:focus{*/
+    /*    border: 1px solid deepskyblue;*/
+    /*}*/
+    .editui button{
+        border-radius: 10px;
+        width: 100px;
+        outline:medium;
+        cursor: pointer;
+    }
+    /*.insert button{*/
+    /*    border-radius: 10px;*/
+    /*    width: 100px;*/
+    /*    outline:medium;*/
+    /*    cursor: pointer;*/
+    /*}*/
+    .editui p label{
+        font-size: 20px;
+        font-family: "Courier New";
+    }
+    /*.insert p label{*/
+    /*    font-size: 20px;*/
+    /*    font-family: "Courier New";*/
+    /*}*/
+    #caozuo{
+        position: relative;
+        margin-left: 50px;
+    }
+    #caozuo  button{
+        width: 100px;
+        height: 30px;
+        border-radius: 10px;
+        color:black;
+        background-color: #FFB6C1;
+        text-align: center;
+        border: 1px solid black;
+        line-height: 0px;
+    }
+    #sousuo{
+        /*margin-top: 10px;*/
+        /*margin-left: 50px;*/
+        position: absolute;
+        left: 620px;
+        top: 0px;
+    }
+
+</style>
+
+
+<body>
+<div id="app">
+    <div id="caozuo">
+        <el-button @click="selectAll()">全选</el-button>
+        <el-button @click="noselect()">取消选择</el-button>
+        <el-button type="text" @click="open">删除</el-button>
+<!--        <el-button @click="Insert()">添加</el-button>-->
+    </div>
+    <div id="sousuo">
+        <template>
+            <el-select v-model="selectzw" clearable placeholder="请选择职务" @change="findAll();">
+                <el-option
+                        v-for="item in zw"
+                        :value="item">
+                </el-option>
+            </el-select>
+        </template>
+        <el-input v-model="input" placeholder="请输入姓名或工号:" style="width: 200px;"></el-input>
+        <el-button icon="el-icon-search" circle style="background-image: linear-gradient(-225deg, #FFE29F 0%, #FFA99F 48%, #ff719a 100%);" @click="findAll()"></el-button>
+    </div>
+    <table style="width:1230px;margin-top: 30px" v-loading="istable">
+        <tr>
+            <td>选择</td>
+            <td>工号</td>
+            <td>密码</td>
+            <td>姓名</td>
+            <td>身份证</td>
+            <td>出生年月</td>
+            <td>性别</td>
+            <td>籍贯</td>
+            <td>政治面貌</td>
+            <td>入职时间</td>
+            <td>家庭住址</td>
+            <td>邮编</td>
+            <td>联系电话</td>
+            <td>职务</td>
+            <td>操作</td>
+        </tr>
+        <tr v-for="(item,index) in teachermessage">
+            <td><input type="checkbox"  :value="item.teacherid" v-model="select"></td>
+            <td >{{item.teacherid}}</td>
+            <td>{{item.teacherpwd}}</td>
+            <td >{{item.teachername}}</td>
+            <td >{{item.personid}}</td>
+            <td >{{item.birthday}}</td>
+            <td >{{item.sex}}</td>
+            <td >{{item.natives}}</td>
+            <td >{{item.political}}</td>
+            <td >{{item.intime}}</td>
+            <td >{{item.address}}</td>
+            <td >{{item.zip}}</td>
+            <td >{{item.phone}}</td>
+            <td >{{item.job}}</td>
+            <td><el-button style="background-image: linear-gradient(-225deg, #FFE29F 0%, #FFA99F 48%, #ff719a 100%);border-radius: 10px;outline: medium;" @click="edit(index);">编辑</el-button></td>&nbsp;&nbsp;
+            <!--                        &lt;!&ndash;                <button style=" background-image: linear-gradient(-225deg, #FFE29F 0%, #FFA99F 48%, #ff719a 100%);border-radius: 10px;width: 30px;outline: medium"@click="deleted(index)">删除</button>&ndash;&gt;-->
+            <!--                        <template>-->
+            <!--                            <el-popconfirm-->
+            <!--                                    confirm-button-text='好的'-->
+            <!--                                    cancel-button-text='不用了'-->
+            <!--                                    icon="el-icon-info"-->
+            <!--                                    icon-color="red"-->
+            <!--                                    title="这是一段内容确定删除吗？"-->
+            <!--                                    @confirm="deleted(index)"-->
+            <!--                            >-->
+            <!--                                <el-button slot="reference">删除</el-button>-->
+            <!--                            </el-popconfirm>-->
+            <!--                        </template>-->
+            <!--                    </td>-->
+        </tr>
+        <tr>
+            <td colspan="15">
+                <button style="border-radius: 10px; background-color: #FFB6C1;" @click="lastpage">上一页</button>{{pages}}/{{pagesnum}}<button style="border-radius: 10px; background-color: #FFB6C1;" @click="nextpage">下一页</button>
+            </td>
+        </tr>
+    </table>
+                <div class="editui" v-if="isedit">
+<!--                    <el-button icon="el-icon-close" circle @click="xedit" id="xedit"></el-button>-->
+                    <el-row :gutter="0">
+                        <el-col :span="12" style="text-align: right">
+                            <p>
+                                <label>教职工号：</label>
+                                <input type="text" disabled="true" v-model="editteachermessage.teacherid">
+                            </p>
+                            <p>
+                                <label>密&nbsp&nbsp&nbsp码：</label>
+                                <input type="text" v-model="editteachermessage.teacherpwd">
+                            </p>
+                            <p>
+                                <label>姓&nbsp&nbsp&nbsp名：</label>
+                                <input type="text"  v-model="editteachermessage.teachername">
+                            </p>
+                            <p>
+                                <label>身份证号：</label>
+                                <input type="text"  v-model="editteachermessage.personid">
+                            </p>
+                            <p>
+                                <label>出生年月：</label>
+                                <input type="date"  v-model="editteachermessage.birthday">
+                            </p>
+                            <p>
+                                <label>性&nbsp&nbsp&nbsp别：</label>
+                                <input type="text"  v-model="editteachermessage.sex" >
+                            </p>
+                            <p>
+                                <label>籍&nbsp&nbsp&nbsp贯：</label>
+                                <input type="text"  v-model="editteachermessage.natives">
+                            </p>
+
+                        </el-col>
+                        <el-col :span="12">
+                            <p>
+                                <label>院&nbsp&nbsp&nbsp系：</label>
+                                <input type="text"  v-model="editteachermessage.college" >
+                            </p>
+                            <p>
+                                <label>政治面貌：</label>
+                                <input type="text"  v-model="editteachermessage.political" >
+                            </p>
+                            <p>
+                                <label>入职时间：</label>
+                                <input type="date" v-model="editteachermessage.intime" >
+                            </p>
+                            <p>
+                                <label>家庭地址：</label>
+                                <input type="text"  v-model="editteachermessage.address" >
+                            </p>
+                            <p>
+                                <label>邮&nbsp&nbsp&nbsp编：</label>
+                                <input type="text"  v-model="editteachermessage.zip" >
+                            </p>
+                            <p>
+                                <label>联系电话：</label>
+                                <input type="text"  v-model="editteachermessage.phone" >
+                            </p>
+                            <p>
+                                <label>职&nbsp&nbsp&nbsp务：</label>
+                                <input type="text"  v-model="editteachermessage.job" >
+                            </p>
+                        </el-col>
+                    </el-row>
+                    <p>
+                        <button @click=" xedit">取消</button>
+                    <button @click=" editSubmit">提交</button>
+                    </p>
+                </div>
+
+<!--    <div class="insert" v-if="isinsert">-->
+<!--        <p>-->
+<!--            <template>-->
+<!--                <el-select v-model="studentsgrades1.courseid" clearable placeholder="请选择课程号" @change="mfindinsertkch">-->
+<!--                    <el-option-->
+<!--                            v-for="item in insertkch"-->
+<!--                            :value="item">-->
+<!--                    </el-option>-->
+<!--                </el-select>-->
+<!--            </template>-->
+<!--        </p>-->
+<!--        <p>-->
+<!--            <el-input v-model="insertcname" placeholder="课程名" disabled="true"></el-input>-->
+<!--        </p>-->
+<!--        <p>-->
+<!--            <template>-->
+<!--                <el-select v-model="studentsgrades1.studentid"  filterable placeholder="请选择学号">-->
+<!--                    <el-option-->
+<!--                            v-for="item in insertxh"-->
+<!--                            :value="item">-->
+<!--                    </el-option>-->
+<!--                </el-select>-->
+<!--            </template>-->
+<!--        </p>-->
+<!--        <p>-->
+<!--            <el-input v-model="studentsgrades1.grade" placeholder="请输入成绩" @input="scpoint"></el-input>-->
+<!--        </p>-->
+<!--        <p>-->
+<!--            <el-input v-model="studentsgrades1.point" placeholder="绩点" disabled="true"></el-input>-->
+<!--        </p>-->
+<!--        <p>-->
+<!--            <button @click="insertSubmit">提交</button>-->
+<!--        </p>-->
+<!--    </div>-->
+</div>
+
+
+
+
+<script>
+    var app = new Vue({
+        el:"#app",
+        data:{
+            teachermessage:[],
+            input:'',
+            select:[],
+            editteachermessage:{teacherid:'',teacherpwd:'',teachername:'',personid:'',photo:'',birthday:'',sex:'',natives:'',college:'',political:'',intime:'',address:'',zip:'',phone:'',job:'',type:''},
+            isedit:false,
+            // studentsgrades1:{studentid:'', courseid:'',grade:'',point:''},
+            // isinsert:false,
+            pages:1,
+            pagesnum:1,
+            nextd:true,
+            istable:true,
+            timer:'',
+            zw:'',
+            selectzw:''
+        },
+        methods: {
+
+            findAll() {
+                var a = new Array();
+                var params = new URLSearchParams();
+                params.append("job",this.selectzw);
+                params.append("param", this.input);
+                params.append("pages",this.pages);
+                axios.post("findteacherAll", params).then(yc => {
+                    if (yc.data.code == 0) {
+                        if (this.nextd==true){
+                            this.teachermessage=a;
+                            this.nextd =false;
+                        }else {
+                            this.$message({
+                                type: 'warning',
+                                message: yc.data.msg
+                            });
+                            this.nextd =false;
+                        }
+                    } else {
+                        this.pagesnum = yc.data.code;
+                        this.teachermessage = yc.data.data;
+                        this.nextd =false;
+                    }
+                })
+            },
+            edit(index) {
+                var s = this.teachermessage;
+                for (var i = 0; i < this.select.length; i++) {
+                    if (this.select[i] == s[index].teacherid) {
+                        this.editteachermessage = s[index];
+                        this.isedit=true;
+                        return;
+                    }
+                }
+                this.$message({
+                    type: 'warning',
+                    message: '请选择要编辑的行!'
+                });
+            },
+            xedit(){
+                this.isedit=false;
+                this.findAll();
+            },
+            editSubmit(){
+                var params = new URLSearchParams();
+                params.append("teacherid",this.editteachermessage.teacherid);
+                params.append("teacherpwd",this.editteachermessage.teacherpwd);
+                params.append("teachername",this.editteachermessage.teachername);
+                params.append("personid",this.editteachermessage.personid);
+                params.append("birthday",this.editteachermessage.birthday);
+                params.append("sex",this.editteachermessage.sex);
+                params.append("natives",this.editteachermessage.natives);
+                params.append("college",this.editteachermessage.college);
+                params.append("political",this.editteachermessage.political);
+                params.append("intime",this.editteachermessage.intime);
+                params.append("address",this.editteachermessage.address);
+                params.append("zip",this.editteachermessage.zip);
+                params.append("phone",this.editteachermessage.phone);
+                params.append("job",this.editteachermessage.job);
+                params.append("type",this.editteachermessage.type);
+                axios.post("updatateacher",params).then(yc=>{
+                    if (yc.data.code==1){
+                        this.$message({
+                            type: 'success',
+                            message: '修改成功!'
+                        });
+                        this.isedit=false;
+                        this.findAll();
+                    }else{
+                        this.$message({
+                            type: 'error',
+                            message: yc.data.msg
+                        });
+                    }
+                })
+            },
+            // deleted(index){
+            //     var s = this.grades;
+            //     for (var i = 0; i < this.select.length; i++) {
+            //         if (this.select[i].sno == s[index].sno && this.select[i].cno == s[index].cno) {
+            //             var params = new URLSearchParams();
+            //             params.append("sno",s[index].sno);
+            //             params.append("cno",s[index].cno)
+            //             axios.post("deletegrades",params).then(yc=>{
+            //                 if (yc.data.code==1){
+            //                     this.nextd=true;
+            //                     this.findAll();
+            //                     this.$message({
+            //                         type: 'success',
+            //                         message: '删除成功!'
+            //                     });
+            //                 }else{
+            //                     this.$message({
+            //                         type: 'error',
+            //                         message: yc.data.msg
+            //                     });
+            //                 }
+            //             })
+            //             return;
+            //         }
+            //     }
+            //     this.$message({
+            //         type: 'warning',
+            //         message: '请选择要删除的行！'
+            //     });
+            // },
+            selectAll(){
+                var a = new Array();
+                for (let i=0;i<this.teachermessage.length;i++) {
+                    a[i] = this.teachermessage[i].teacherid;
+                }
+                this.select = a;
+            },
+            noselect(){
+                var b = new Array();
+                this.select=b;
+            },
+            // xinsert(){
+            //     this.isinsert=false;
+            //     this.findAll();
+            // },
+            // insertSubmit(){
+            //     var params = new URLSearchParams();
+            //     params.append("studentid",this.studentsgrades1.studentid);
+            //     params.append("courseid",this.studentsgrades1.courseid);
+            //     params.append("grade",this.studentsgrades1.grade);
+            //     params.append("point",this.studentsgrades1.point);
+            //     axios.post("insertstudentsgrades",params).then(yc=>{
+            //         if (yc.data.code==1){
+            //             this.mfindinsertxh();
+            //             this.findAll();
+            //             this.$message({
+            //                 type: 'success',
+            //                 message: '添加成功!'
+            //             });
+            //         }else {
+            //             this.$message({
+            //                 type: 'error',
+            //                 message: yc.data.msg
+            //             });
+            //         }
+            //
+            //     });
+            //     var x = new Array();
+            //     this.studentsgrades1.studentid = '';
+            //     this.studentsgrades1.grade='';
+            //     this.studentsgrades1.point='';
+            //     this.select = x;
+            // },
+            // Insert(){
+            //     this.isinsert=true;
+            // },
+            lastpage(){
+                if (this.pages-1==0){
+                    this.$message({
+                        type: 'warning',
+                        message: '已是首页！'
+                    });
+                }else{
+                    this.pages = this.pages-1;
+                    this.findAll();
+                }
+            },
+            nextpage(){
+                if (this.pages>=this.pagesnum){
+                    this.$message({
+                        type: 'warning',
+                        message: '已是末页！'
+                    });
+                }else {
+                    this.pages = this.pages+1;
+                    this.findAll();
+                }
+            },
+            get(){
+                this.istable=false;
+            },
+            open() {
+                if (this.select==undefined || this.select==null || this.select<=0){
+                    this.$message({
+                        type: 'warning',
+                        message: '请选择要删除的栏目！'
+                    });
+                    return;
+                }
+                this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning',
+                    center: true
+                }).then(() => {
+                    // var a = this.select;
+                    // var b = new Array();
+                    // var c = new Array();
+                    //
+                    // for(var i=0;i<a.length;i++){
+                    //     b[i] = a[i].studentid;
+                    //     c[i] = a[i].courseid;
+                    // }
+                    var params = new URLSearchParams();
+                    params.append("tid",this.select);
+                    axios.post("deleteteacher",params).then(yc=>{
+                        if (yc.data.code==1){
+                            if(this.pages>1){
+                                this.pages--;
+                            }
+                            this.nextd=true;
+                            this.findAll();
+                            this.$message({
+                                type: 'success',
+                                message: '删除成功!'
+                            });
+                        }else {
+                            this.$message({
+                                type: 'erroe',
+                                message: yc.data.msg
+                            });
+                        }
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+            findzw(){
+                var params = new URLSearchParams();
+                axios.post("findjob",params).then(yc=>{
+                    if (yc.data.code==1){
+                        this.zw = yc.data.data;
+                    }
+                })
+            },
+
+
+
+
+        },
+        mounted: function(){
+            this.findzw();
+            this.findAll();
+            this.timer = setTimeout(this.get, 300);
+        },
+        beforeDestroy() {
+            clearTimeout(this.timer);
+        }
+
+    })
+</script>
+
+
+
+
+
+</body>
+</html>

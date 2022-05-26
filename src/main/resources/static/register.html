@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>注册</title>
+    <style>
+        body {
+            background-image: url("img/ll.png ");
+            background-repeat: no-repeat;
+            background-size: 100%;
+        }
+
+        #register {
+            margin: 100px auto;
+            background-color: rgba(0, 0, 0, 0.1);
+            width: 500px;
+            height: 500px;
+            border-radius: 10px;
+        }
+
+        p {
+            margin-left: 160px;
+            padding-top: 30px;
+        }
+
+        #register input {
+            width: 300px;
+        }
+
+        .el-form {
+            padding-left: 20px;
+        }
+
+        button {
+            width: 200px;
+            height: 30px;
+            background-image: linear-gradient(-225deg, #FFE29F 0%, #FFA99F 48%, #ff719a 100%);
+            border-radius: 10px;
+            text-align: center;
+            margin-left: 150px;
+        }
+
+        #email {
+            position: relative;
+        }
+
+        span {
+            position: absolute;
+            border-bottom: 1px solid black;
+            font-size: 15px;
+            color: red;
+            cursor: pointer;
+            font-style: italic;
+            left: 300px;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="register">
+        <p style="font-family: '微软雅黑'; font-weight: bolder; font-size: 35px;">REGISTER</p>
+        <el-form :label-position="right" label-width="100px" :rules="rules"  :model="registerform" ref="registerform">
+            <el-form-item label="用户名:" prop="username">
+                <el-input placeholder="请输入用户名" v-model="registerform.username"></el-input>
+            </el-form-item>
+            <el-form-item label="密码:" prop="pwd">
+                <el-input placeholder="请输入密码" type="password" v-model="registerform.pwd"></el-input>
+            </el-form-item>
+            <el-form-item label="确认密码:">
+                <el-input placeholder="请确认密码" type="password" v-model="registerform.repwd"></el-input>
+            </el-form-item>
+            <el-form-item label="请输入邮箱:">
+                <el-input id="email" placeholder="请输入邮箱" v-model="registerform.sendperson"></el-input>
+                <span @click="sendemail()">{{message}}</span>
+            </el-form-item>
+            <el-form-item label="验证码:" prop="yxm">
+                <el-input id="yzm" placeholder="请输入验证码" v-model="registerform.yxm"></el-input>
+            </el-form-item>
+        </el-form>
+        <button @click="register()">注册</button>
+    </div>
+</div>
+
+</body>
+<script type="text/javascript" src="js/jquery-1.9.1.js"></script>
+<script type="text/javascript" src="js/vue.js"></script>
+<script type="text/javascript" src="js/axios.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script>
+    var app = new Vue({
+        el: "#app",
+        data: {
+            registerform: {
+                sendperson: "",
+                username: '',
+                pwd: '',
+                repwd: '',
+                yxm: ''
+            },
+            message: "发送验证码",
+            rules: {
+                username: [
+                    {required: true, message: '用户名不能为空', trigger: 'blur'},
+                    {min: 5, max: 10, message: '长度在 5 到 10 个字符', trigger: 'blur'}
+                ],
+                pwd: [
+                    {required: true, message: '密码不能为空', trigger: 'blur'}
+                ],
+                yxm: [
+                    {required: true, message: '验证码不能为空', trigger: 'blur'}
+                ],
+            }
+        },
+        methods: {
+            sendemail() {
+                var re = /^[1-9][0-9]{4,10}@qq.com$/;
+                if (re.test(this.registerform.sendperson)) {
+                    var params = new URLSearchParams();
+                    params.append("sendperson", this.registerform.sendperson)
+                    axios.post("email", params);
+                    this.message = "重新发送?"
+                } else {
+                    this.$message({
+                        type: 'error',
+                        message: '请输入正确的邮箱地址！'
+                    });
+                }
+            },
+            register() {
+                if (this.registerform.pwd != this.registerform.repwd) {
+                    this.$message({
+                        type: 'error',
+                        message: '请重新确定密码！！'
+                    });
+                } else {
+                    var params = new URLSearchParams();
+                    params.append("username", this.registerform.username);
+                    params.append("pwd", this.registerform.pwd);
+                    params.append("yxm", this.registerform.yxm);
+                    axios.post("register", params).then(yc => {
+                        if (yc.data.code == 1) {
+                            alert("注册成功！");
+                            location.href = "index.html";
+                        } else {
+                            this.$message({
+                                type: 'error',
+                                message: yc.data.msg
+                            });
+                        }
+                    });
+
+                }
+            },
+
+        }
+    })
+</script>
+</html>

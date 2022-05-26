@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!-- 引入样式 -->
+    <script type="text/javascript" src="js/jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="js/vue.js"></script>
+    <script type="text/javascript" src="js/axios.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+        td {
+            text-align: center;
+            font-weight: bold;
+            font-size: 10px;
+            color: gray;
+
+        }
+
+        .editui {
+            position: absolute;
+            left: 200px;
+            top: 50px;
+            background-color: rgba(255, 204, 204, 0.9);
+            width: 800px;
+            border-radius: 10px;
+        }
+
+        .insert {
+            position: absolute;
+            left: 200px;
+            top: 50px;
+            background-color: rgba(255, 204, 204, 0.9);
+            width: 800px;
+            border-radius: 10px;
+        }
+
+        .editui p {
+            text-align: center;
+        }
+
+        .insert p {
+            text-align: center;
+        }
+
+        /*.editui span {*/
+        /*    position: absolute;*/
+        /*    left: 375px;*/
+        /*    border-radius: 50%;*/
+        /*    text-align: center;*/
+        /*    width: 20px;*/
+        /*    border: 1px paleturquoise solid;*/
+        /*    cursor: pointer;*/
+
+        /*}*/
+
+        /*.insert span {*/
+        /*    position: absolute;*/
+        /*    left: 375px;*/
+        /*    border-radius: 50%;*/
+        /*    text-align: center;*/
+        /*    width: 20px;*/
+        /*    border: 1px paleturquoise solid;*/
+        /*    cursor: pointer;*/
+        /*}*/
+
+        .editui p input {
+            border-radius: 10px;
+            height: 30px;
+            width: 200px;
+            outline: medium;
+        }
+
+        .insert p input {
+            border-radius: 10px;
+            height: 30px;
+            width: 200px;
+            outline: medium;
+        }
+
+        .editui p input:focus {
+            border: 1px solid deepskyblue;
+        }
+
+        .insert p input:focus {
+            border: 1px solid deepskyblue;
+        }
+
+        .editui button {
+            border-radius: 10px;
+            width: 100px;
+            outline: medium;
+        }
+
+        .insert button {
+            border-radius: 10px;
+            width: 100px;
+            outline: medium;
+        }
+
+        .editui p label {
+            font-size: 20px;
+            font-family: "Courier New";
+        }
+
+        .insert p label {
+            font-size: 20px;
+            font-family: "Courier New";
+        }
+
+        #caozuo {
+            position: relative;
+            margin-left: 50px;
+        }
+
+        #caozuo button {
+            width: 100px;
+            height: 30px;
+            border-radius: 10px;
+            color: black;
+            background-color: #FFB6C1;
+            text-align: center;
+            border: 1px solid black;
+            line-height: 0px;
+        }
+
+        #sousuo {
+            /*position: absolute;*/
+            /*left: 620px;*/
+            /*top: 0px;*/
+            /*margin-left: 720px;*/
+            margin-top: 10px;
+            margin-left: 50px;
+        }
+    </style>
+</head>
+
+<body>
+<div id="app">
+    <div id="caozuo">
+        <el-button @click="selectAll()">全选</el-button>
+        <el-button @click="noselect()">取消选择</el-button>
+        <el-button type="text" @click="open">删除</el-button>
+        <el-button @click="Insert()">添加</el-button>
+    </div>
+
+    <div id="sousuo">
+        <template>
+            <el-select v-model="myselectsjbj" clearable placeholder="请选择年级" @change="findAll()">
+                <el-option
+                        v-for="item in selectsjbj"
+                        :value="item">
+                </el-option>
+            </el-select>
+        </template>
+        <template>
+            <el-select v-model="myselectpolitical" clearable placeholder="请选择政治面貌" @change="findAll()">
+                <el-option
+                        v-for="item in selectpolitical"
+                        :value="item">
+                </el-option>
+            </el-select>
+        </template>
+        <el-input v-model="input" placeholder="请输入学生学号或姓名" style="width: 200px"></el-input>
+        <el-button icon="el-icon-search" circle
+                   style="background-image: linear-gradient(-225deg, #FFE29F 0%, #FFA99F 48%, #ff719a 100%);"
+                   @click="findAll()"></el-button>
+    </div>
+    <table style="width:1230px;margin-top: 30px" v-loading="istable">
+        <tr>
+            <td>选择</td>
+            <td>学号</td>
+            <td>班级</td>
+            <td>姓名</td>
+            <td>密码</td>
+            <td>身份证</td>
+            <td>院系</td>
+            <td>出生年月</td>
+            <td>性别</td>
+            <td>籍贯</td>
+            <td>政治面貌</td>
+            <td>入学年月</td>
+            <td>家庭住址</td>
+            <td>邮政编码</td>
+            <td>联系电话</td>
+            <td>父母联系电话</td>
+            <td>操作</td>
+        </tr>
+        <tr v-for="(item,index) in stu">
+            <td><input type="checkbox"  :value="item.studentid" v-model="select"></td>
+            <td>{{item.studentid}}</td>
+            <td>{{item.classes}}</td>
+            <td>{{item.studentname}}</td>
+            <td>{{item.studentpwd}}</td>
+            <td>{{item.personid}}</td>
+            <td>{{item.college}}</td>
+            <td>{{item.birthday}}</td>
+            <td>{{item.sex}}</td>
+            <td>{{item.natives}}</td>
+            <td>{{item.political}}</td>
+            <td>{{item.intime}}</td>
+            <td>{{item.address}}</td>
+            <td>{{item.zip}}</td>
+            <td>{{item.phone}}</td>
+            <td>{{item.parentphone}}</td>
+            <td>
+                <el-button style="background-image: linear-gradient(-225deg, #FFE29F 0%, #FFA99F 48%, #ff719a 100%);border-radius: 10px;outline: medium" @click="edit(index);">编辑</el-button>&nbsp;&nbsp;
+            </td>
+        </tr>
+        <tr>
+            <td colspan="17">
+                <button style="border-radius: 10px; background-color: #FFB6C1;" @click="lastpage">上一页</button>
+                {{pages}}/{{pagesnum}}
+                <button style="border-radius: 10px; background-color: #FFB6C1;" @click="nextpage">下一页</button>
+            </td>
+        </tr>
+    </table>
+<div class="editui" v-if="isedit">
+    <el-row :gutter="0">
+        <el-col :span="12" style="text-align: right">
+            <p>
+                <label>学&nbsp&nbsp&nbsp号：</label>
+                <input type="text" disabled="true" v-model="editstu.studentid">
+            </p>
+            <p>
+                <label>班&nbsp&nbsp&nbsp级：</label>
+                <input type="text"  v-model="editstu.classes">
+            </p>
+            <p>
+                <label>姓&nbsp&nbsp&nbsp名：</label>
+                <input type="text"  v-model="editstu.studentname">
+            </p>
+            <p>
+                <label>密&nbsp&nbsp&nbsp码：</label>
+                <input type="text" v-model="editstu.studentpwd">
+            </p>
+            <p>
+                <label>身份证号：</label>
+                <input type="text"  v-model="editstu.personid">
+            </p>
+            <p>
+                <label>出生年月：</label>
+                <input type="date"  v-model="editstu.birthday">
+            </p>
+            <p>
+                <label>性&nbsp&nbsp&nbsp别：</label>
+                <input type="text"  v-model="editstu.sex" >
+            </p>
+            <p>
+                <label>院&nbsp&nbsp&nbsp系：</label>
+                <input type="text"  v-model="editstu.college" >
+            </p>
+        </el-col>
+        <el-col :span="12">
+            <p>
+                <label>籍&nbsp&nbsp&nbsp贯：</label>
+                <input type="text"  v-model="editstu.natives">
+            </p>
+            <p>
+                <label>政治面貌：</label>
+                <input type="text"  v-model="editstu.political" >
+            </p>
+            <p>
+                <label>入学年月：</label>
+                <input type="date" v-model="editstu.intime" >
+            </p>
+            <p>
+                <label>家庭地址：</label>
+                <input type="text"  v-model="editstu.address" >
+            </p>
+            <p>
+                <label>邮政编码：</label>
+                <input type="text"  v-model="editstu.zip" >
+            </p>
+            <p>
+                <label>联系电话：</label>
+                <input type="text"  v-model="editstu.phone" >
+            </p>
+            <p>
+                <label>父母电话：</label>
+                <input type="text"  v-model="editstu.parentphone" >
+            </p>
+        </el-col>
+    </el-row>
+    <p>
+        <button @click=" xedit">取消</button>
+        <button @click=" editSubmit">提交</button>
+    </p>
+</div>
+    <div class="insert" v-if="isinsert">
+        <el-row :gutter="0">
+            <el-col :span="12" style="text-align: right">
+                <p>
+                    <label>学&nbsp&nbsp&nbsp号：</label>
+                    <input type="text"  v-model="insertstu.studentid">
+                </p>
+                <p>
+                    <label>班&nbsp&nbsp&nbsp级：</label>
+                    <input type="text"  v-model="insertstu.classes">
+                </p>
+                <p>
+                    <label>姓&nbsp&nbsp&nbsp名：</label>
+                    <input type="text"  v-model="insertstu.studentname">
+                </p>
+                <p>
+                    <label>密&nbsp&nbsp&nbsp码：</label>
+                    <input type="text" v-model="insertstu.studentpwd">
+                </p>
+                <p>
+                    <label>身份证号：</label>
+                    <input type="text"  v-model="insertstu.personid">
+                </p>
+                <p>
+                    <label>出生年月：</label>
+                    <input type="date"  v-model="insertstu.birthday">
+                </p>
+                <p>
+                    <label>性&nbsp&nbsp&nbsp别：</label>
+                    <input type="text"  v-model="insertstu.sex" >
+                </p>
+            </el-col>
+            <el-col :span="12">
+                <p>
+                    <label>籍&nbsp&nbsp&nbsp贯：</label>
+                    <input type="text"  v-model="insertstu.natives">
+                </p>
+                <p>
+                    <label>政治面貌：</label>
+                    <input type="text"  v-model="insertstu.political" >
+                </p>
+                <p>
+                    <label>入学年月：</label>
+                    <input type="date" v-model="insertstu.intime" >
+                </p>
+                <p>
+                    <label>家庭地址：</label>
+                    <input type="text"  v-model="insertstu.address" >
+                </p>
+                <p>
+                    <label>邮政编码：</label>
+                    <input type="text"  v-model="insertstu.zip" >
+                </p>
+                <p>
+                    <label>联系电话：</label>
+                    <input type="text"  v-model="insertstu.phone" >
+                </p>
+                <p>
+                    <label>父母电话：</label>
+                    <input type="text"  v-model="insertstu.parentphone" >
+                </p>
+            </el-col>
+        </el-row>
+        <p>
+            <button @click="xinsert">取消</button>
+            <button  @click="insertSubmit">提交</button>
+        </p>
+    </div>
+</div>
+
+<script>
+    var app = new Vue({
+        el:"#app",
+        data:{
+            stu:[],
+            editstu:{studentid:'',classes:'',studentpwd:'',studentname:'',personid:'',photo:'',college:'',birthday:'',sex:'',natives:'',political:'',intime:'',address:'',zip:'',phone:'',parentphone:''},
+            insertstu:{studentid:'',classes:'',studentpwd:'',studentname:'',personid:'',photo:'',college:'',birthday:'',sex:'',natives:'',political:'',intime:'',address:'',zip:'',phone:'',parentphone:''},
+            input:'',
+            pages:1,
+            pagesnum:1,
+            select:[],
+            istable:true,
+            isedit:false,
+            isinsert:false,
+            timer:'',
+            nextd:true,
+            selectsjbj:'',
+            myselectsjbj:'',
+            selectpolitical:['党员','团员','群众'],
+            myselectpolitical:''
+        },
+        methods: {
+            findAll() {
+                var a = new Array();
+                var params = new URLSearchParams();
+                params.append("classes",this.myselectsjbj);
+                params.append("political",this.myselectpolitical);
+                params.append("param", this.input);
+                params.append("pages",this.pages)
+                axios.post("plusfindstudent", params).then(yc => {
+                    if (yc.data.code == 0) {
+                        if (this.nextd==true){
+                            this.stu=a;
+                        }else {
+                            this.$message({
+                                type: 'warning',
+                                message: yc.data.msg
+                            });
+                        }
+                        this.nextd = false;
+                    } else {
+                        this.pagesnum = yc.data.code;
+                        this.stu = yc.data.data;
+                        this.nextd = false;
+                    }
+                })
+            },
+            findsjbj(){
+                var params = new URLSearchParams();
+                axios.post("plusfindclasses",params).then(yc=>{
+                    if (yc.data.code==1){
+                        this.selectsjbj = yc.data.data;
+                    }
+                })
+            },
+            edit(index) {
+                var s = this.stu;
+                for (var i = 0; i < this.select.length; i++) {
+                    if (this.select[i] == s[index].studentid) {
+                        this.editstu = s[index];
+                        this.isedit=true;
+                        return;
+                    }
+                }
+                this.$message({
+                    type: 'warning',
+                    message: '请选择要编辑的行!'
+                });
+            },
+            xedit(){
+                this.isedit=false;
+                this.findAll();
+            },
+            editSubmit(){
+                var params = new URLSearchParams();
+                params.append("studentid",this.editstu.studentid);
+                params.append("classes",this.editstu.classes);
+                params.append("studentpwd",this.editstu.studentpwd);
+                params.append("studentname",this.editstu.studentname);
+                params.append("personid",this.editstu.personid);
+                params.append("college",this.editstu.college);
+                params.append("birthday",this.editstu.birthday);
+                params.append("sex",this.editstu.sex);
+                params.append("natives",this.editstu.natives);
+                params.append("political",this.editstu.political);
+                params.append("intime",this.editstu.intime);
+                params.append("address",this.editstu.address);
+                params.append("zip",this.editstu.zip);
+                params.append("phone",this.editstu.phone);
+                params.append(" parentphone",this.editstu. parentphone);
+                axios.post("plusupdatastudent",params).then(yc=>{
+                    if (yc.data.code==1){
+                        this.$message({
+                            type: 'success',
+                            message: '修改成功!'
+                        });
+                        this.isedit=false;
+                        this.findAll();
+                    }else{
+                        this.$message({
+                            type: 'error',
+                            message: yc.data.msg
+                        });
+                    }
+                })
+            },
+            // deleted(index){
+            //     var s = this.stu;
+            //     for (var i = 0; i < this.select.length; i++) {
+            //         if (this.select[i] == s[index].sno) {
+            //             var params = new URLSearchParams();
+            //             params.append("sno",s[index].sno);
+            //             axios.post("deleted",params).then(yc=>{
+            //                 if (yc.data.code==1){
+            //                     if(this.pages>1){
+            //                         this.pages--;
+            //                     }
+            //                     this.nextd=true;
+            //                     this.findAll();
+            //                     this.$message({
+            //                         type: 'success',
+            //                         message: '删除成功!'
+            //                     });
+            //                 }else{
+            //                     this.$message({
+            //                         type: 'error',
+            //                         message: yc.data.msg
+            //                     });
+            //                 }
+            //             })
+            //             return;
+            //         }
+            //     }
+            //     this.$message({
+            //         type: 'warning',
+            //         message: '请选择要删除的行!'
+            //     });
+            // },
+            selectAll(){
+                const a = new Array();
+                for (let i = 0;i<this.stu.length;i++){
+                    a[i] = this.stu[i].studentid;
+                }
+                this.select=a;
+            },
+            noselect(){
+                var b = new Array();
+                this.select=b;
+            },
+            xinsert(){
+                this.isinsert=false;
+                this.findAll();
+            },
+            insertSubmit(){
+                var params = new URLSearchParams();
+                params.append("studentid",this.insertstu.studentid);
+                params.append("classes",this.insertstu.classes);
+                params.append("studentpwd",this.insertstu.studentpwd);
+                params.append("studentname",this.insertstu.studentname);
+                params.append("personid",this.insertstu.personid);
+                params.append("birthday",this.insertstu.birthday);
+                params.append("sex",this.insertstu.sex);
+                params.append("natives",this.insertstu.natives);
+                params.append("political",this.insertstu.political);
+                params.append("intime",this.insertstu.intime);
+                params.append("address",this.insertstu.address);
+                params.append("zip",this.insertstu.zip);
+                params.append("phone",this.insertstu.phone);
+                params.append(" parentphone",this.insertstu. parentphone);
+                axios.post("plusinsertstudent",params).then(yc=>{
+                    if (yc.data.code==1){
+                        this.findAll();
+                        this.$message({
+                            type: 'success',
+                            message: '添加成功!'
+                        });
+                    }else {
+                        this.$message({
+                            type: 'error',
+                            message: yc.data.msg
+                        });
+                    }
+
+                });
+                var x = new Array();
+                this.select = x;
+                this.insertstu = x;
+            },
+            Insert(){
+                this.isinsert=true;
+            },
+            lastpage(){
+                if (this.pages-1==0){
+                    this.$message({
+                        type: 'warning',
+                        message: '已是首页!'
+                    });
+                }else{
+                    this.pages = this.pages-1;
+                    this.findAll();
+                }
+            },
+            nextpage(){
+                if (this.pages>=this.pagesnum){
+                    this.$message({
+                        type: 'warning',
+                        message: '已是末页!'
+                    });
+                }else {
+                    this.pages = this.pages+1;
+                    this.findAll();
+                }
+            },
+            get(){
+                this.istable=false;
+            },
+            open() {
+                if (this.select==undefined || this.select==null || this.select<=0){
+                    alert("请选择要删除的栏目！")
+                    return;
+                }
+                this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning',
+                    center: true
+                }).then(() => {
+                    var params = new URLSearchParams();
+                    params.append("studentid",this.select);
+                    axios.post("plusdeletestudent",params).then(yc=>{
+                        if (yc.data.code==1){
+                            if(this.pages>1){
+                                this.pages--;
+                            }
+                            this.nextd=true;
+                            this.findAll();
+                            this.$message({
+                                type: 'success',
+                                message: '删除成功!'
+                            });
+                        }else {
+                            this.$message({
+                                type: 'erroe',
+                                message: yc.data.msg
+                            });
+                        }
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+        },
+        mounted:function(){
+            this.findAll();
+            this.findsjbj();
+            this.timer = setTimeout(this.get, 300);
+        },
+        beforeDestroy() {
+            clearTimeout(this.timer);
+        }
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!-- 引入样式 -->
+    <script type="text/javascript" src="js/jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="js/vue.js"></script>
+    <script type="text/javascript" src="js/axios.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+</head>
+<style>
+    td{
+        text-align: center;
+        font-weight: bold;
+        color: gray;
+
+    }
+    .editui{
+        position: absolute;
+        left:350px;
+        top: 50px;
+        background-color: rgba(255,204,204,0.9);
+        width: 400px;
+        border-radius: 10px;
+    }
+    .editui p{
+        text-align: center;
+    }
+     .xeditui{
+        position: absolute;
+        left: 375px;
+        border-radius:50%;
+        text-align: center;
+        width: 20px;
+        border:1px paleturquoise solid;
+        cursor: pointer;
+
+    }
+    .editui p input{
+        height: 40px;
+        outline: medium;
+        width: 220px;
+    }
+    .editui p input:focus{
+        border: 1px solid deepskyblue;
+    }
+    .editui button{
+        border-radius: 10px;
+        width: 50px;
+        outline:medium;
+        cursor: pointer;
+    }
+    .editui p label{
+        display: block;
+        font-size: 20px;
+        font-family: "Courier New";
+    }
+    #caozuo{
+        position: relative;
+        margin-left: 50px;
+    }
+    #caozuo  button{
+        width: 100px;
+        height: 30px;
+        border-radius: 10px;
+        color:black;
+        background-color: #FFB6C1;
+        text-align: center;
+        border: 1px solid black;
+        line-height: 0px;
+    }
+    #sousuo{
+      margin-top: 10px;
+        margin-left: 50px;
+    }
+
+</style>
+
+
+<body>
+<div id="app">
+           <div id="caozuo">
+               <el-button @click="selectAll()">全选</el-button>
+               <el-button @click="noselect()">取消选择</el-button>
+               <el-button type="text" @click="open">删除</el-button>
+<!--               <el-button @click="Insert()">添加</el-button>-->
+           </div>
+            <div id="sousuo">
+                <template>
+                    <el-select v-model="selectxq" clearable placeholder="请选择学期" @change="mmxq">
+                        <el-option
+                                v-for="item in xq"
+                                :value="item">
+                        </el-option>
+                    </el-select>
+                </template>
+                <template>
+                    <el-select v-model="selectbj" clearable placeholder="请选择班级" @change="mmbj">
+                        <el-option
+                                v-for="item in bj"
+                                :value="item">
+                        </el-option>
+                    </el-select>
+                </template>
+                <template>
+                    <el-select v-model="selectck" clearable placeholder="请选择课程" @change="mmck">
+                        <el-option
+                                v-for="item in ck"
+                                :value="item">
+                        </el-option>
+                    </el-select>
+                </template>
+                <el-input v-model="input" placeholder="请输入姓名和学号:" style="width: 200px;"></el-input>
+                <el-button icon="el-icon-search" circle style="background-image: linear-gradient(-225deg, #FFE29F 0%, #FFA99F 48%, #ff719a 100%);" @click="findAll()"></el-button>
+            </div>
+            <table style="width:1230px;margin-top: 30px" v-loading="istable">
+                <tr>
+                    <td>选择</td>
+                    <td>学期</td>
+                    <td>班级</td>
+                    <td>学号</td>
+                    <td>姓名</td>
+                    <td>科目</td>
+                    <td>学分</td>
+                    <td>成绩</td>
+                    <td>操作</td>
+                </tr>
+                <tr v-for="(item,index) in grades">
+                    <td><input type="checkbox"  :value="item" v-model="select"></td>
+                    <td >{{item.semester}}</td>
+                    <td >{{item.classes}}</td>
+                    <td >{{item.studentid}}</td>
+                    <td >{{item.studentname}}</td>
+                    <td >{{item.cname}}</td>
+                    <td >{{item.credit}}</td>
+                    <td >{{item.grade}}</td>
+                    <td><el-button style="background-image: linear-gradient(-225deg, #FFE29F 0%, #FFA99F 48%, #ff719a 100%);border-radius: 10px;outline: medium;" @click="edit(index);">编辑</el-button></td>&nbsp;&nbsp;
+                </tr>
+                <tr>
+                    <td colspan="9">
+                        <button style="border-radius: 10px; background-color: #FFB6C1;" @click="lastpage">上一页</button>{{pages}}/{{pagesnum}}<button style="border-radius: 10px; background-color: #FFB6C1;" @click="nextpage">下一页</button>
+                    </td>
+                </tr>
+            </table>
+            <div class="editui" v-if="isedit">
+                <span class="xeditui" @click="xedit()">X</span>
+                <p>
+                    <label>学&nbsp&nbsp号:</label>
+                    <el-input type="text" v-model="studentsgrades.studentid"  disabled="disabled"></el-input>
+                </p>
+                <p>
+                    <label>姓&nbsp&nbsp名:</label>
+                    <el-input type="text" v-model="studentsgrades.studentname"  disabled="disabled"></el-input>
+                </p>
+                <p>
+                    <label>课程号:</label>
+                    <el-input type="text" v-model="studentsgrades.courseid"  disabled="disabled"></el-input>
+                </p>
+                <p>
+                    <label>课程名:</label>
+                    <el-input type="text" v-model="studentsgrades.cname"  disabled="disabled"></el-input></el-input>
+                </p>
+                <p>
+                    <label>成&nbsp&nbsp绩:</label>
+                    <template>
+                        <el-select v-model="studentsgrades.grade" clearable placeholder="请选择成绩">
+                            <el-option
+                                    v-for="item in ispass"
+                                    :value="item">
+                            </el-option>
+                        </el-select>
+                    </template>
+                </p>
+                <p>
+                    <button @click="editSubmit">提交</button>
+                </p>
+            </div>
+
+<!--            <div class="insert" v-if="isinsert">-->
+<!--                <span id="insertx" @click="xinsert()">X</span>-->
+<!--                <p>-->
+<!--                <template>-->
+<!--                    <el-select v-model="studentsgrades1.courseid" clearable placeholder="请选择课程号" @change="mfindinsertkch">-->
+<!--                        <el-option-->
+<!--                                v-for="item in insertkch"-->
+<!--                                :value="item">-->
+<!--                        </el-option>-->
+<!--                    </el-select>-->
+<!--                </template>-->
+<!--                </p>-->
+<!--                <p>-->
+<!--                    <el-input v-model="insertcname" placeholder="课程名" disabled="true"></el-input>-->
+<!--                </p>-->
+<!--                <p>-->
+<!--                <template>-->
+<!--                    <el-select v-model="studentsgrades1.studentid"  filterable placeholder="请选择学号">-->
+<!--                        <el-option-->
+<!--                                v-for="item in insertxh"-->
+<!--                                :value="item">-->
+<!--                        </el-option>-->
+<!--                    </el-select>-->
+<!--                </template>-->
+<!--                </p>-->
+<!--                <p>-->
+<!--                    <el-input v-model="studentsgrades1.grade" placeholder="请输入成绩" @input="scpoint"></el-input>-->
+<!--                </p>-->
+<!--                <p>-->
+<!--                    <el-input v-model="studentsgrades1.point" placeholder="绩点" disabled="true"></el-input>-->
+<!--                </p>-->
+<!--                <p>-->
+<!--                    <button @click="insertSubmit">提交</button>-->
+<!--                </p>-->
+<!--            </div>-->
+</div>
+
+
+
+
+<script>
+    var app = new Vue({
+        el:"#app",
+        data:{
+            grades:[],
+            input:'',
+            select:[],
+            // studentsgrades:{studentid:'',studentname:'', courseid:'',cname:'',grade:''},
+            studentgrades:'',
+            ispass:[60,0],
+            isedit:false,
+            // studentsgrades1:{studentid:'', courseid:'',grade:''},
+            isinsert:false,
+            pages:1,
+            pagesnum:1,
+            nextd:true,
+            istable:true,
+            timer:'',
+            xq:'',
+            selectxq:'',
+            bj:'',
+            selectbj:'',
+            ck:'',
+            selectck:'',
+
+        },
+        methods: {
+
+            findAll() {
+                var a = new Array();
+                var params = new URLSearchParams();
+                params.append("semester",this.selectxq);
+                params.append("cname",this.selectck);
+                params.append("classes",this.selectbj);
+                params.append("param", this.input);
+                params.append("pages",this.pages);
+                axios.post("plusteacherfindexaminationgrades", params).then(yc => {
+                    if (yc.data.code == 0) {
+                        if (this.nextd==true){
+                            this.grades=a;
+                            this.nextd =false;
+                        }else {
+                            this.$message({
+                                type: 'warning',
+                                message: yc.data.msg
+                            });
+                            this.nextd =false;
+                        }
+                    } else {
+                        this.pagesnum = yc.data.code;
+                        this.grades = yc.data.data;
+                        this.nextd =false;
+                    }
+                })
+            },
+            edit(index) {
+                var s = this.grades;
+                for (var i = 0; i < this.select.length; i++) {
+                    if (this.select[i].studentid==s[i].studentid && this.select[i].courseid==s[i].courseid) {
+                        this.studentsgrades = s[index];
+                        this.isedit=true;
+                        return;
+                    }
+                }
+                this.$message({
+                    type: 'warning',
+                    message: '请选择要编辑的行!'
+                });
+            },
+            xedit(){
+                this.isedit=false;
+                this.findAll();
+            },
+            editSubmit(){
+                var params = new URLSearchParams();
+                params.append("grade",this.studentsgrades.grade);
+                params.append("studentid",this.studentsgrades.studentid);
+                params.append("courseid",this.studentsgrades.courseid);
+                axios.post("plusteacherupdateexamination",params).then(yc=>{
+                    if (yc.data.code==1){
+                        this.$message({
+                            type: 'success',
+                            message: '修改成功!'
+                        });
+                        this.isedit=false;
+                        this.findAll();
+                    }else{
+                        this.$message({
+                            type: 'error',
+                            message: yc.data.msg
+                        });
+                    }
+                })
+                var a = new Array();
+                this.select = a;
+            },
+            selectAll(){
+                this.select=this.grades;
+            },
+            noselect(){
+                var b = new Array();
+                this.select=b;
+            },
+            lastpage(){
+                if (this.pages-1==0){
+                    this.$message({
+                        type: 'warning',
+                        message: '已是首页！'
+                    });
+                }else{
+                    this.pages = this.pages-1;
+                    this.findAll();
+                }
+            },
+            nextpage(){
+                if (this.pages>=this.pagesnum){
+                    this.$message({
+                        type: 'warning',
+                        message: '已是末页！'
+                    });
+                }else {
+                    this.pages = this.pages+1;
+                    this.findAll();
+                }
+            },
+            get(){
+                this.istable=false;
+            },
+            open() {
+                if (this.select==undefined || this.select==null || this.select<=0){
+                    this.$message({
+                        type: 'warning',
+                        message: '请选择要删除的栏目！'
+                    });
+                    return;
+                }
+                this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning',
+                    center: true
+                }).then(() => {
+                    var a = this.select;
+                    var b = new Array();
+                    var c = new Array();
+
+                    for(var i=0;i<a.length;i++){
+                        b[i] = a[i].studentid;
+                        c[i] = a[i].courseid;
+                    }
+                    var params = new URLSearchParams();
+                    params.append("studentid",b);
+                    params.append("courseid",c);
+                    axios.post("plusteacherdeleteexaminationgrades",params).then(yc=>{
+                        if (yc.data.code==1){
+                            if(this.pages>1){
+                                this.pages--;
+                            }
+                            this.nextd=true;
+                            this.findAll();
+                            this.$message({
+                                type: 'success',
+                                message: '删除成功!'
+                            });
+                        }else {
+                            this.$message({
+                                type: 'erroe',
+                                message: yc.data.msg
+                            });
+                        }
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+            mbj(){
+                var params = new URLSearchParams();
+                params.append("semester",this.selectxq);
+                axios.post("plusteacherfindexaminationclasses",params).then(yc=>{
+                    if (yc.data.code==1){
+                        this.bj = yc.data.data;
+                    }
+                })
+            },
+            mmbj(){
+                this.selectck='';
+                this.mck();
+                this.findAll();
+            },
+            mxq(){
+                var params = new URLSearchParams();
+                axios.post("plusteacherfindexaminationsemester",params).then(yc=>{
+                    if (yc.data.code==1){
+                        this.xq = yc.data.data;
+                    }
+                })
+            },
+            mmxq(){
+                this.selectbj='';
+                this.selectck='';
+                this.mbj();
+                this.findAll();
+            },
+
+            mck(){
+                var params = new URLSearchParams();
+                params.append("semester",this.selectxq);
+                params.append("classes",this.selectbj);
+                axios.post("plusteacherfindexaminationcname",params).then(yc=>{
+                    if (yc.data.code==1){
+                        this.ck = yc.data.data;
+                    }
+                })
+            },
+            mmck(){
+                this.findAll();
+            },
+
+
+        },
+        mounted: function(){
+            this.mxq();
+            this.findAll();
+            this.timer = setTimeout(this.get, 300);
+        },
+        beforeDestroy() {
+            clearTimeout(this.timer);
+        }
+
+    })
+</script>
+
+
+
+
+
+</body>
+</html>

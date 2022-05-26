@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        .form1{
+            margin-left: 450px;
+            margin-top: 100px;
+        }
+        .form1 input{
+            width: 250px;
+        }
+    </style>
+</head>
+<body>
+<div id="app" style="width: 1230px">
+    <el-steps :active="active" finish-status="success">
+        <el-step title="填写重修通道信息"></el-step>
+        <el-step title="确认重修通道信息"></el-step>
+        <el-step title="发布成功"></el-step>
+    </el-steps>
+    <div class="form1">
+    <el-form :label-position="center" label-width="100px" v-if="myform==1">
+        <el-form-item label="报名开始时间:">
+                <span class="demonstration"></span>
+                <el-date-picker
+                        v-model="date1"
+                        type="date"
+                        placeholder="选择日期">
+                </el-date-picker>
+        </el-form-item>
+        <el-form-item label="报名截止时间:">
+            <span class="demonstration"></span>
+            <el-date-picker
+                    v-model="date2"
+                    type="date"
+                    placeholder="选择日期">
+            </el-date-picker>
+        </el-form-item>
+        <el-form-item label="所在院校:">
+            <el-input v-model="formcollege" :disabled="true"></el-input>
+        </el-form-item>
+    </el-form>
+        <el-form :label-position="center" label-width="100px" v-else-if="myform==2">
+            <el-form-item label="报名开始时间:">
+                <span class="demonstration"></span>
+                <el-date-picker
+                        :disabled="true"
+                        v-model="date1"
+                        type="date"
+                        placeholder="选择日期">
+                </el-date-picker>
+            </el-form-item>
+            <el-form-item label="报名截止时间:">
+                <span class="demonstration"></span>
+                <el-date-picker
+                        :disabled="true"
+                        v-model="date2"
+                        type="date"
+                        placeholder="选择日期">
+                </el-date-picker>
+            </el-form-item>
+            <el-form-item label="所在院校:">
+                <el-input v-model="formcollege" :disabled="true"></el-input>
+            </el-form-item>
+        </el-form>
+        <el-button type="success" round v-else-if="myform==3" style="margin-top: 100px; margin-left: 10px;width:200px;height:100px" @click="submitpipe">开启报名通道</el-button>
+        <div v-else="myform" style="margin-right: 450px">
+        <el-result icon="success" title="成功提示" subTitle="请根据提示进行操作" >
+            <template slot="extra">
+                <el-button type="primary" size="medium" @click="comeback">返回</el-button>
+            </template>
+        </el-result>
+        </div>
+    </div>
+    <div style="text-align: center">
+    <el-button  @click="shangyige" v-if="syb">上一步</el-button>
+    <el-button  @click="next" v-if="xyb">下一步</el-button>
+    </div>
+</div>
+<script type="text/javascript" src="js/jquery-1.9.1.js"></script>
+<script type="text/javascript" src="js/vue.js"></script>
+<script type="text/javascript" src="js/axios.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script>
+    var app = new Vue({
+        el:"#app",
+        data:{
+            active: 0,
+            date1:'',
+            date2:'',
+            formcollege:'',
+            myform:1,
+            syb:false,
+            xyb:true
+        },
+        methods:{
+            next() {
+                if (this.date1=='' || this.date1==null || this.date2==null || this.date2=='' || this.formcollege=='' || this.formcollege==null){
+                  this.$message({
+                      type: 'warning',
+                      message: '请填满表单'
+                  })
+                    return;
+                }
+                this.syb = true;
+                this.myform = this.myform+1;
+                if (this.myform==3){
+                    this.xyb = false;
+                    this.syb=false;
+                }
+                if (this.active++ > 2) this.active = 0;
+            },
+            shangyige() {
+                this.xyb=true;
+                this.myform = this.myform-1;
+                if (this.myform==1){
+                    this.syb=false;
+                }
+                if (this.active-- > 2) this.active = 0;
+            },
+            submitpipe(){
+                var params = new URLSearchParams();
+                params.append("startdate",this.date1);
+                params.append("enddate",this.date2);
+                params.append("college",this.formcollege)
+                axios.post("insertrestartnotify",params).then(yc=>{
+                    if (yc.data.code==1){
+                        this.myform = this.myform+1;
+                        if (this.active++ > 2) this.active = 0;
+                    }else {
+                        this.$message({
+                            type: "error",
+                            message: "系统繁忙！"
+                        });
+                    }
+                })
+            },
+            comeback(){
+                location. reload();
+                this.$router.go(0);
+            },
+            selectcollege(){
+                var params = new URLSearchParams();
+                axios.post("restartnotifycollege",params).then(yc=>{
+                    if (yc.data.code==1){
+                        this.formcollege = yc.data.data;
+                    }
+                })
+            },
+        },
+        mounted() {
+            this.selectcollege();
+        },
+        destroyed() {
+
+        }
+    })
+</script>
+</body>
+</html>

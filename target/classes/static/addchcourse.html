@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="js/jquery-1.9.1.js"></script>
+    <script src="js/vue.js"></script>
+    <script src="js/axios.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <meta charset="UTF-8">
+    <title>增加课程</title>
+</head>
+<body>
+    <div id="app">
+        <el-button type="primary" icon="el-icon-search"
+                   style="float:right;margin-left: 20px" @click="serach">搜索</el-button>
+        <el-input style="float:right;width: 200px"
+                  placeholder="请输入内容"
+                  v-model="input2">
+        </el-input>
+        <el-button style="float:right;margin-right: 20px" @click="dialogVisible = true">添加课程信息</el-button>
+        <template>
+            <el-table
+                    ref="filterTable"
+                    :data="tableData"
+                    style="width:1230px">
+                <el-table-column
+                        prop="chcourseid"
+                        label="课程号"
+                        sortable
+                        column-key="date">
+                </el-table-column>
+                <el-table-column
+                        prop="chname"
+                        label="课程名">
+                </el-table-column>
+                <el-table-column
+                        prop="chtype"
+                        label="课程类型"
+                        :filters="type"
+                        :filter-method="filterTag"
+                        filter-placement="bottom-end">
+                    <template slot-scope="scope">
+                        <el-tag  :type="scope.row.chtype === '材料类' ? 'primary' : 'success'"  disable-transitions>
+                            {{scope.row.chtype}}
+                        </el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="chcourseid">
+                    <template slot-scope="scope" >
+                        <el-button type="primary" plain @click="updatechcourse(scope.$index)" >修改课程</el-button>
+                        <template>
+                            <el-popconfirm
+                                    confirm-button-text='好的'
+                                    cancel-button-text='不用了'
+                                    @confirm="deletechcourse(scope.row.chcourseid)"
+                                    icon="el-icon-info"
+                                    icon-color="red"
+                                    title="确认删除该课程吗？">
+                                <el-button slot="reference" type="danger" plain slot="reference">删除课程</el-button>
+                            </el-popconfirm>
+                        </template>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </template>
+
+
+        <el-dialog title="添加课程" :visible.sync="dialogVisible">
+            <el-form :model="form">
+                <el-form-item label="课程名称" :label-width="'120px'">
+                    <el-input v-model="form.name" autocomplete="off" style="width: 50%"></el-input>
+                </el-form-item>
+                <el-form-item label="课程类型" :label-width="'120px'">
+                    <el-select v-model="form.type" placeholder="请选择课程类型">
+                        <el-option
+                                v-for="item in type"
+                                :key="item.value"
+                                :label="item.value"
+                                :value="item.value">
+                        </el-option>
+                    </el-select>
+                    <template>
+                        <el-popover
+                                placement="top"
+                                width="200"
+                                v-model="visible">
+                            <p>你想添加的类型为:</p>
+                            <el-input v-model="addtype" placeholder="请输入内容"></el-input>
+                            <div style="text-align: right; margin:10px 0px">
+                                <el-button size="mini" type="text" @click="visible = false">取消</el-button>
+                                <el-button type="primary" size="mini" @click="addtypes">确定</el-button>
+                            </div>
+                            <el-button slot="reference" plain>增加课程类型</el-button>
+                        </el-popover>
+                    </template>
+                </el-form-item>
+                <el-form-item label="课程简介" :label-width="'120px'" style="width: 70%">
+                    <el-input type="textarea" v-model="form.desc"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="addchcourse">确 定</el-button>
+            </div>
+        </el-dialog>
+
+
+        <el-dialog title="修改课程" :visible.sync="updateVisible">
+            <el-form :model="clickform">
+                <el-form-item label="课程号" :label-width="'120px'">
+                    {{clickform.id}}
+                </el-form-item>
+                <el-form-item label="课程名称" :label-width="'120px'">
+                    <el-input v-model="clickform.name" autocomplete="off" style="width: 50%"></el-input>
+                </el-form-item>
+                <el-form-item label="课程类型" :label-width="'120px'">
+                    <el-select v-model="clickform.type" placeholder="请选择课程类型">
+                        <el-option
+                                v-for="item in type"
+                                :key="item.value"
+                                :label="item.value"
+                                :value="item.value">
+                        </el-option>
+                    </el-select>
+                    <template>
+                        <el-popover
+                                placement="top"
+                                width="200"
+                                v-model="visible">
+                            <p>你想添加的类型为:</p>
+                            <el-input v-model="addtype" placeholder="请输入内容"></el-input>
+                            <div style="text-align: right; margin:10px 0px">
+                                <el-button size="mini" type="text" @click="visible = false">取消</el-button>
+                                <el-button type="primary" size="mini" @click="addtypes">确定</el-button>
+                            </div>
+                            <el-button slot="reference" plain>增加课程类型</el-button>
+                        </el-popover>
+                    </template>
+                </el-form-item>
+                <el-form-item label="课程简介" :label-width="'120px'" style="width: 70%">
+                    <el-input type="textarea" v-model="clickform.desc"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="updateVisible = false">取 消</el-button>
+                <el-button type="primary" @click="updateachcourse">确 定</el-button>
+            </div>
+        </el-dialog>
+
+        <el-pagination
+                page-size="5"
+                layout="prev, pager, next"
+                :total="counts"
+                :current-page="pagename"
+                @current-change=" handleCurrentChange"
+                >
+        </el-pagination>
+    </div>
+</body>
+<script>
+    var vue=new Vue({
+        el:"#app",
+        data: {
+            type:[],
+            tableData: [],
+            input2:'',
+            dialogVisible: false,
+            updateVisible: false,
+            counts:'',
+            clickform:{
+                id:'',
+                name: '',
+                type: '',
+                desc: '',
+            },
+            form: {
+                name: '',
+                type: '',
+                desc: '',
+            },
+            visible: false,
+            addtype:'',
+            pagename:1,
+        },
+        methods: {
+            filterTag(value, row) {
+                return row.chtype === value;
+            },
+            serach(){
+                this.count();
+                this.pagename=1;
+                this.getchcourse();
+            },
+            getchcourse(){
+                var params=new URLSearchParams();
+                params.append("chname",this.input2);
+                params.append("pagename",this.pagename);
+                axios.post("selectch",params).then(d=>{
+                    //console.log(d.data.data.length);
+                    this.tableData=d.data.data;
+                })
+            },
+            getalltype(){
+                axios.post("gettype").then(d=>{
+                    for(i in d.data.data){
+                        var obj={
+                            text:d.data.data[i],
+                            value:d.data.data[i],
+                        }
+                        this.type.push(obj);
+                    }
+                })
+            },
+            deletechcourse(index){
+                //A100
+                var params=new URLSearchParams();
+                params.append("chcourseid",index);
+                axios.post("deletech",params).then(d=>{
+                    this.getchcourse();
+                })
+
+            },
+            addtypes(){
+                for (i in this.type){
+                    if (this.type[i].value == this.addtype){
+                        this.visible = false;
+                        alert("已存在该课程类型");
+                        this.addtype='';
+                        return;
+                    }
+                }
+                if (this.addtype==''){
+                    alert("添加内容不得为空");
+                }else{
+                    var obj={
+                        text:this.addtype,
+                        value:this.addtype,
+                    }
+                    this.type.push(obj);
+                    this.addtype='';
+                    this.visible = false;
+                }
+            },
+            addchcourse(){
+                this.dialogVisible = false;
+                var params=new URLSearchParams();
+                params.append("chtype",this.form.type);
+                params.append("chname",this.form.name);
+                params.append("introduction",this.form.desc);
+                axios.post("addchcourse",params).then(d=>{
+                    if (d.data==true){
+                        this.getchcourse();
+                        this.type=[];
+                        this.getalltype();
+                    }else {
+                        alert("添加失败")
+                    }
+                });
+                this.form={name: '', type: '', desc: '',};
+            },
+            updatechcourse(index){
+                var i=index;
+                this.clickform.id=this.tableData[i].chcourseid;
+                this.clickform.name=this.tableData[i].chname;
+                this.clickform.type=this.tableData[i].chtype;
+                this.clickform.desc=this.tableData[i].introduction;
+                this.updateVisible=true;
+            },
+            updateachcourse(){
+                if(this.clickform.name == ''){
+                    alert("课程名不能为空");
+                }else{
+                    this.updateVisible = false;
+                    var params=new URLSearchParams();
+                    params.append("chcourseid",this.clickform.id);
+                    params.append("chtype",this.clickform.type);
+                    params.append("chname",this.clickform.name);
+                    params.append("introduction",this.clickform.desc);
+                    axios.post("updatechcourse",params).then(d=>{
+                        if (d.data==true){
+                            this.getchcourse();
+                            this.type=[];
+                            this.getalltype();
+                        }else {
+                            alert("修改失败");
+                        }
+                    })
+                }
+            },
+            count(){
+                this.pagename=1;
+                var params=new URLSearchParams();
+                params.append("chname",this.input2)
+                axios.post("count",params).then(d=>{
+                    this.counts = d.data;
+                })
+            },
+            handleCurrentChange: function(pagename) {
+                this.pagename = pagename
+                this.getchcourse();
+            }
+
+        },
+        mounted:function () {
+            this.count();
+            this.getchcourse();
+            this.getalltype();
+        }
+    })
+</script>
+</html>

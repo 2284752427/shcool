@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+
+        td {
+            text-align: center;
+            font-weight: bold;
+            color: gray;
+
+        }
+        .myform input{
+            width: 250px;
+        }
+        .myform{
+            margin-left: 450px;
+            margin-top: 100px;
+        }
+        .istop{
+            position: relative;
+        }
+        .buttonsub{
+            position: absolute;
+            text-align: center;
+            padding-left: 100px;
+            left: 500px;
+            top: 500px;
+        }
+    </style>
+</head>
+<body>
+<div id="app" style="width: 1230px">
+    <el-empty description="未到报名时间" v-if="take" style="margin-top: 100px"></el-empty>
+    <div class="takeform" v-else>
+        <el-steps :active="active" finish-status="success" class="istop">
+            <el-step title="确定重修科目(如有误请联系老师)"></el-step>
+            <el-step title="确定考生信息(同上)"></el-step>
+            <el-step title="确定报名"></el-step>
+        </el-steps>
+        <el-button type="success" round v-if="step==1"
+                   style="margin-top: 200px; margin-left: 500px;width:200px;height:100px" @click="firststep">开始报名
+        </el-button>
+        <table style="width:1230px;margin-top: 30px" v-else-if="step==2">
+            <tr>
+                <td>课程号</td>
+                <td>课程名</td>
+                <td>学分</td>
+            </tr>
+            <tr v-for="(item,index) in course">
+                <td>{{item.courseid}}</td>
+                <td>{{item.cname}}</td>
+                <td>{{item.credit}}</td>
+            </tr>
+        </table>
+        <el-form :label-position="right" label-width="100px" v-else-if="step==3" class="myform">
+            <el-form-item label="学号">
+                <el-input v-model="stu.studentid" :disabled="true"></el-input>
+            </el-form-item>
+            <el-form-item label="姓名">
+                <el-input v-model="stu.studentname" :disabled="true"></el-input>
+            </el-form-item>
+            <el-form-item label="班级">
+                <el-input v-model="stu.classes" :disabled="true"></el-input>
+            </el-form-item>
+            <el-form-item label="院系">
+                <el-input v-model="stu.college" :disabled="true"></el-input>
+            </el-form-item>
+        </el-form>
+        <el-button type="success" round v-else-if="step==4"
+                   style="margin-top: 200px; margin-left: 500px;width:200px;height:100px" @click="pay">确认报名
+        </el-button>
+        <div v-else="step" style="margin-left: 250px;margin-right:250px;margin-top: 100px">
+            <el-result icon="success" title="报名成功" subTitle="请根据提示进行操作">
+                <template slot="extra">
+                    <el-button type="primary" size="medium" @click="comeback">返回</el-button>
+                </template>
+            </el-result>
+        </div>
+    </div>
+    <div class="buttonsub">
+        <el-button @click="next" v-if="btn">确认信息</el-button>
+    </div>
+</div>
+<script type="text/javascript" src="js/jquery-1.9.1.js"></script>
+<script type="text/javascript" src="js/vue.js"></script>
+<script type="text/javascript" src="js/axios.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script>
+    var app = new Vue({
+        el: "#app",
+        data: {
+            active: 0,
+            take: true,
+            step: 1,
+            timer: '',
+            course: [],
+            btn: false,
+            stu:'',
+            out_trade_no:'',
+            subject:'',
+            total_amount:'',
+        },
+        methods: {
+            findrestartnotify() {
+                var params = new URLSearchParams();
+                axios.post("findrestartnotify", params).then(yc => {
+                    if (yc.data.code == 1) {
+                        this.take = false;
+                    }
+                })
+            },
+            firststep() {
+                var params = new URLSearchParams();
+                axios.post("studenttakerestart",params).then(yc=>{
+                    if (yc.data.code==1){
+                        this.btn = true;
+                        this.step = 2;
+                        this.course=yc.data.data;
+                    }else {
+                        this.$message({
+                            type:'warning',
+                            message: yc.data.msg
+                        })
+                    }
+                })
+
+            },
+            next() {
+                if (this.active++ > 2) this.active = 0;
+                this.step = this.step + 1;
+                if (this.step==4){
+                    this.btn=false;
+                }
+            },
+            comeback() {
+                location.reload();
+                this.$router.go(0);
+            },
+            stumessages(){
+                var params = new URLSearchParams();
+                axios.post("takeexaminationstudentselfmessages",params).then(yc=>{
+                    if (yc.data.code==1){
+                        this.stu = yc.data.data;
+                    }
+                })
+            },
+           sendcourseid(){
+                var a = new Array();
+                for (var i=0;i<this.course.length;i++){
+                    a[i] = this.course[i].courseid;
+                }
+                var params = new URLSearchParams();
+                params.append("courseid",a);
+                axios.post("sendcourseid",params).then(yc=>{
+                })
+            },
+            pay() {
+                var a = 0;
+                for (var i = 0; i < this.course.length; i++) {
+                    a = a+this.course[i].credit;
+                }
+                this.total_amount+=75*a;
+                this.out_trade_no = Math.round(Math.random()*10000);
+                this.subject = '我的订单';
+                var params = new URLSearchParams();
+                params.append("total_amount",this.total_amount);
+                params.append("subject",this.subject);
+                params.append("out_trade_no",this.out_trade_no);
+                axios.post('alipay',params).then(successResponse => {
+                    this.sendcourseid();
+                    document.querySelector('body').innerHTML = successResponse.data;//查找到当前页面的body，将后台返回的form替换掉他的内容
+                    document.forms[0].submit();  //执行submit表单提交，让页面重定向，跳转到支付宝页面
+                }).catch();
+            }
+        },
+        mounted: function () {
+            this.findrestartnotify();
+            this.stumessages();
+        },
+
+    })
+</script>
+</body>
+</html>

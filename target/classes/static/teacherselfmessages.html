@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>个人信息</title>' <!-- 引入样式 -->
+    <script type="text/javascript" src="js/jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="js/vue.js"></script>
+    <script type="text/javascript" src="js/axios.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+        body{
+            background-image: url(img/ll.png);
+            background-repeat: no-repeat;
+            background-size: 100%;
+
+        }
+        .avatar-uploader .el-upload {
+            border: 1px dashed #d9d9d9;
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .avatar-uploader .el-upload:hover {
+            border-color: #409EFF;
+        }
+        .avatar-uploader-icon {
+            font-size: 28px;
+            color: #8c939d;
+            width: 178px;
+            height: 178px;
+            line-height: 178px;
+            text-align: center;
+        }
+        .avatar {
+            width: 178px;
+            height: 178px;
+            display: block;
+        }
+        label{
+          text-align: right;
+        }
+        input{
+            border-radius: 10px;
+            outline: medium;
+            height: 25px;
+            width: 180px;
+        }
+        input:focus{
+            border: solid deepskyblue;
+        }
+        #touxiang{
+            text-align: center;
+        }
+        el-upload{
+            position: absolute;
+            left: 100px;
+        }
+        #mainui{
+            margin: 20px auto;
+            background-color: rgba(0,2,0,0.1);
+            border-radius: 10px;
+            width: 1000px;
+            height: 600px;
+        }
+      #mainui button{
+          width: 100px;
+          height: 30px;
+          border-radius: 10px;
+          color:black;
+          background-color: pink;
+          text-align: center;
+          border: 1px solid black;
+          line-height: 0px;
+      }
+        #mainui button:hover{
+           color: white;
+        }
+
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="mainui" v-if="isedit">
+    <div id="touxiang">
+    <label>头像</label>
+        <el-upload
+                name="uploadFile"
+                class="avatar-uploader"
+                action="upload"
+                :show-file-list="false"
+                :on-success="handleAvatarSuccess"
+                :before-upload="beforeAvatarUpload">
+            <img v-if="photo" :src="photo" class="avatar">
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+        </el-upload>
+    </div>
+    <el-row :gutter="20">
+        <el-col :span="12" style="text-align: right">
+            <p>
+                <label>教职工号：</label>
+                <input type="text" disabled="true" v-model="messages.teacherid">
+            </p>
+            <p>
+                <label>姓&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp名：</label>
+                <input type="text" disabled="true" v-model="messages.teachername">
+            </p>
+            <p>
+                <label>身份证号：</label>
+                <input type="text" disabled="true" v-model="messages.personid">
+            </p>
+            <p>
+                <label>出生年月：</label>
+                <input type="date" disabled="true" v-model="messages.birthday">
+            </p>
+            <p>
+                <label>性&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp别：</label>
+                <input type="text"  v-model="messages.sex" disabled="true">
+            </p>
+            <p>
+                <label>籍&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp贯：</label>
+                <input type="text"  v-model="messages.natives"disabled="true">
+            </p>
+            <p>
+                <label>院&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp系：</label>
+                <input type="text"  v-model="messages.college" disabled="true">
+            </p>
+        </el-col>
+        <el-col :span="12">
+            <p>
+                <label>政治面貌：</label>
+                <input type="text"  v-model="messages.political" disabled="true">
+            </p>
+            <p>
+                <label>入职时间：</label>
+                <input type="date" v-model="messages.intime" disabled="true">
+            </p>
+            <p>
+                <label>家庭地址：</label>
+                <input type="text"  v-model="messages.address" disabled="true">
+            </p>
+            <p>
+                <label>邮&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp编：</label>
+                <input type="text"  v-model="messages.zip" disabled="true">
+            </p>
+            <p>
+                <label>联系电话：</label>
+                <input type="text"  v-model="messages.phone" disabled="true">
+            </p>
+            <p>
+                <label>职&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp务：</label>
+                <input type="text"  v-model="messages.job" disabled="true">
+            </p>
+        </el-col>
+    </el-row>
+        <el-button style="margin-left: 400px" @click="edit">编辑</el-button>
+        <el-button @click="submitmessage">保存</el-button>
+    </div>
+    <div id="mainui" v-else>
+        <div id="touxiang">
+            <el-upload
+                    name="uploadFile"
+                    class="avatar-uploader"
+                    action="upload"
+                    :show-file-list="false"
+                    :on-success="handleAvatarSuccess"
+                    :before-upload="beforeAvatarUpload">
+                <img v-if="photo" :src="photo" class="avatar">
+                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+            </el-upload>
+        </div>
+        <el-row :gutter="20">
+            <el-col :span="12" style="text-align: right">
+                <p>
+                    <label>教职工号：</label>
+                    <input type="text" disabled="true" v-model="messages.teacherid">
+                </p>
+                <p>
+                    <label>姓&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp名：</label>
+                    <input type="text"  v-model="messages.teachername">
+                </p>
+                <p>
+                    <label>身份证号：</label>
+                    <input type="text"  v-model="messages.personid">
+                </p>
+                <p>
+                    <label>出生年月：</label>
+                    <input type="date"  v-model="messages.birthday">
+                </p>
+                <p>
+                    <label>性&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp别：</label>
+                    <input type="text"  v-model="messages.sex" >
+                </p>
+                <p>
+                    <label>籍&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp贯：</label>
+                    <input type="text"  v-model="messages.natives">
+                </p>
+                <p>
+                    <label>院&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp系：</label>
+                    <input type="text"  v-model="messages.college" >
+                </p>
+            </el-col>
+            <el-col :span="12">
+                <p>
+                    <label>政治面貌：</label>
+                    <input type="text"  v-model="messages.political" >
+                </p>
+                <p>
+                    <label>入职时间：</label>
+                    <input type="date" v-model="messages.intime" >
+                </p>
+                <p>
+                    <label>家庭地址：</label>
+                    <input type="text"  v-model="messages.address" >
+                </p>
+                <p>
+                    <label>邮&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp编：</label>
+                    <input type="text"  v-model="messages.zip" >
+                </p>
+                <p>
+                    <label>联系电话：</label>
+                    <input type="text"  v-model="messages.phone" >
+                </p>
+                <p>
+                    <label>职&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp务：</label>
+                    <input type="text"  v-model="messages.job" >
+                </p>
+            </el-col>
+        </el-row>
+        <el-button style="margin-left: 400px" @click="edit">编辑</el-button>
+        <el-button @click="submitmessage">保存</el-button>
+    </div>
+
+</div>
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            messages:{teacherid:'',teacherpwd:'',teachername:'',personid:'',photo:'',birthday:'',sex:'',natives:'',college:'',political:'',intime:'',address:'',zip:'',phone:'',job:'',type:''},
+            photo:'',
+            isedit:true,
+            myedit:false,
+        },
+        methods: {
+            handleAvatarSuccess(res, file) {
+                this.photo= URL.createObjectURL(file.raw);
+                axios.post("geturl").then(yc=>{
+                    if (yc.data.code==1){
+                        this.messages.photo = "http://localhost/img/"+yc.data.data;
+                    }
+
+                })
+            },
+            beforeAvatarUpload(file) {
+                const isJPG = file.type === 'image/jpeg';
+                const isLt2M = file.size / 1024 / 1024 < 2;
+
+                if (!isJPG) {
+                    this.$message.error('上传头像图片只能是 JPG 格式!');
+                }
+                if (!isLt2M) {
+                    this.$message.error('上传头像图片大小不能超过 2MB!');
+                }
+                return isJPG && isLt2M;
+            },
+            selfmessage() {
+                const params = new URLSearchParams();
+                axios.post("teacherselfMessages",params).then(yc=>{
+                    if (yc.data.code==1){
+                        this.messages = yc.data.data;
+                        if (this.myedit==false) {
+                            this.photo = this.messages.photo;
+                        }
+                    }
+                })
+            },
+            edit(){
+                this.isedit = false;
+            },
+            submitmessage(){
+                var params = new URLSearchParams();
+                params.append("teacherid",this.messages.teacherid);
+                params.append("teachername",this.messages.teachername);
+                params.append("personid",this.messages.personid);
+                params.append("photo",this.messages.photo);
+                params.append("birthday",this.messages.birthday);
+                params.append("sex",this.messages.sex);
+                params.append("natives",this.messages.natives);
+                params.append("college",this.messages.college);
+                params.append("political",this.messages.political);
+                params.append("intime",this.messages.intime);
+                params.append("address",this.messages.address);
+                params.append("zip",this.messages.zip);
+                params.append("phone",this.messages.phone);
+                params.append("job",this.messages.job);
+                params.append("type",this.messages.type);
+                axios.post("updatateacherselfmessages",params).then(yc => {
+                    if (yc.data.code==1){
+                        this.$message.success("保存成功！");
+                        this.myedit = true;
+                        this.selfmessage();
+                        this.isedit = true;
+                    }else {
+                        this.$message.error(yc.data.msg);
+                    }
+                })
+            }
+
+        },
+        mounted:function () {
+          this.selfmessage();
+        }
+
+    })
+</script>
+
+
+</body>
+</html>

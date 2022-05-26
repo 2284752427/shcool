@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!-- 引入样式 -->
+    <script type="text/javascript" src="js/jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="js/vue.js"></script>
+    <script type="text/javascript" src="js/axios.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+</head>
+<style>
+    td {
+        text-align: center;
+        font-weight: bold;
+        font-size: 15px;
+        color: gray;
+
+    }
+
+    #sousuo {
+        margin-top: 10px;
+        margin-left: 50px;
+    }
+
+</style>
+
+
+<body>
+<div id="app">
+    <!--           <div id="caozuo">-->
+    <!--               <el-button @click="selectAll()">全选</el-button>-->
+    <!--               <el-button @click="noselect()">取消选择</el-button>-->
+    <!--               <el-button type="text" @click="open">删除</el-button>-->
+    <!--               <el-button @click="Insert()">添加</el-button>-->
+    <!--           </div>-->
+    <div id="sousuo">
+        <template>
+            <el-select v-model="selectxq" clearable placeholder="请选择学期" @change="mbj()">
+                <el-option
+                        v-for="item in xq"
+                        :value="item">
+                </el-option>
+            </el-select>
+        </template>
+        <template>
+            <el-select v-model="selectbj" placeholder="请选择班级" @change="findAll()">
+                <el-option
+                        v-for="item in bj"
+                        :value="item">
+                </el-option>
+            </el-select>
+            <el-select v-model="selectorder" placeholder="进行排序" @change="findAll()">
+                <el-option
+                        v-for="item in order"
+                        :value="item">
+                </el-option>
+            </el-select>
+        </template>
+        <el-input v-model="input" placeholder="请输入姓名和学号:" style="width: 200px;"></el-input>
+        <el-button icon="el-icon-search" circle
+                   style="background-image: linear-gradient(-225deg, #FFE29F 0%, #FFA99F 48%, #ff719a 100%);"
+                   @click="findAll()"></el-button>
+    </div>
+    <el-empty description="无信息" v-if="!showtable" style="width: 1230px"></el-empty>
+    <div v-loading="istable" v-if="showtable">
+        <table style="width:1230px;margin-top: 30px" >
+            <tr>
+                <td>排名</td>
+                <td>学号</td>
+                <td>姓名</td>
+                <td v-for="item in cname">{{item}}</td>
+                <td>平均绩点</td>
+            </tr>
+            <tr v-for="(items , index) in grades">
+                <td>{{index+1}}</td>
+                <td>{{items.studentid}}</td>
+                <td>{{items.studentname}}</td>
+                <td v-for="item in items.grade">{{item}}</td>
+                <td>{{items.point}}</td>
+            </tr>
+
+        </table>
+            <button style="border-radius: 10px; background-color: #FFB6C1;margin-left: 500px" @click="lastpage">上一页</button>
+            {{pages}}/{{pagesnum}}
+            <button style="border-radius: 10px; background-color: #FFB6C1;" @click="nextpage">下一页</button>
+        </td>
+    </div>
+</div>
+
+
+<script>
+    var app = new Vue({
+        el: "#app",
+        data: {
+            cname: [],
+            stu: [],
+            grades: [],
+            input: '',
+            pages: 1,
+            pagesnum: 1,
+            istable: true,
+            showtable: false,
+            timer: '',
+            xq: '',
+            selectxq: '',
+            bj: '',
+            selectbj: '',
+            selectorder: '',
+            order: ['默认排名', '升序排名'],
+            isorder: false,
+        },
+        methods: {
+            mbj() {
+                this.selectbj = '';
+                this.selectorder='';
+                this.showtable = false;
+                this.istable = true;
+                var params = new URLSearchParams();
+                params.append("semester", this.selectxq);
+                axios.post("plusteacherfindclasses", params).then(yc => {
+                    if (yc.data.code == 1) {
+                        this.bj = yc.data.data;
+                    }
+                })
+            },
+            mxq() {
+                var params = new URLSearchParams();
+                axios.post("plusteacherfindsemester", params).then(yc => {
+                    if (yc.data.code == 1) {
+                        this.xq = yc.data.data;
+                    }
+                })
+            },
+            tablecname() {
+                var params = new URLSearchParams();
+                params.append("semester", this.selectxq);
+                params.append("classes", this.selectbj);
+                axios.post("plusteacherfindcname", params).then(yc => {
+                    if (yc.data.code == 1) {
+                        this.cname = yc.data.data;
+                        this.tablestudent();
+                    }
+                })
+            },
+            tablestudent() {
+                var params = new URLSearchParams();
+                params.append("classes", this.selectbj);
+                params.append("pages", this.pages);
+                params.append("param", this.input);
+                axios.post("plusteacherfindstudent", params).then(yc => {
+                    if (yc.data.code > 0) {
+                        this.stu = yc.data.data;
+                        this.pagesnum = yc.data.code;
+                        this.tablegrades();
+                    }else {
+                        this.$message({
+                            type: 'warning',
+                            message: yc.data.msg
+                        });
+                    }
+                })
+            },
+            tablegrades() {
+                this.timer = setTimeout(this.get, 300);
+                this.showtable = true;
+                var a = new Array();
+                for (var i = 0; i < this.stu.length; i++) {
+                    a[i] = this.stu[i].studentid;
+                }
+                var params = new URLSearchParams();
+                params.append("studentid", a);
+                params.append("cname", this.cname);
+                params.append("semester", this.selectxq);
+                axios.post("plusteacherfindgrade", params).then(yc => {
+                    if (yc.data.code == 1) {
+                        this.grades = yc.data.data;
+                        if (this.selectorder == '升序排名') {
+                            this.orderbygrades();
+                        }
+                    }
+                })
+            },
+            findAll() {
+                if (this.selectbj == null || this.selectbj == '' || this.selectbj == undefined) {
+                    this.$message({
+                        type: 'warning',
+                        message: "请先选择班级"
+                    });
+                    return;
+                }
+                this.tablecname();
+            },
+            orderbygrades() {
+                for (var i = 0; i < this.grades.length - 1; i++) {
+                    for (var j = i + 1; j < this.grades.length; j++) {
+                        if (this.grades[j].point > this.grades[i].point) {
+                            if (this.grades[j].point > this.grades[i].point) {
+                                var temp = this.grades[i];
+                                this.grades[i] = this.grades[j];
+                                this.grades[j] = temp;
+                            }
+                        }
+                    }
+                }
+            },
+            lastpage() {
+                if (this.pages - 1 == 0) {
+                    this.$message({
+                        type: 'warning',
+                        message: '已是首页！'
+                    });
+                } else {
+                    this.pages = this.pages - 1;
+                    this.findAll();
+                }
+            },
+            nextpage() {
+                if (this.pages >= this.pagesnum) {
+                    this.$message({
+                        type: 'warning',
+                        message: '已是末页！'
+                    });
+                } else {
+                    this.pages = this.pages + 1;
+                    this.findAll();
+                }
+            },
+            get() {
+                this.istable = false;
+            },
+            // scpoint(){
+            //     if (this.studentsgrades1.grade>=60) {
+            //         this.studentsgrades1.point = ((this.studentsgrades1.grade - 50) / 10).toFixed(1);
+            //     }else{
+            //         this.studentsgrades1.point = 0;
+            //     }
+            // },
+        },
+        mounted: function () {
+            this.mxq();
+            this.timer = setTimeout(this.get, 300);
+
+        },
+        beforeDestroy() {
+            clearTimeout(this.timer);
+        }
+    })
+</script>
+
+
+</body>
+</html>

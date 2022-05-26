@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="js/jquery-1.9.1.js"></script>
+    <script src="js/vue.js"></script>
+    <script src="js/axios.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <meta charset="UTF-8">
+    <title>学生选课</title>
+</head>
+<body>
+<div id="app">
+    <el-button type="primary" icon="el-icon-search"
+               style="float:right;margin-left: 20px" @click="serach">搜索</el-button>
+    <el-input style="float:right;width: 200px"
+              placeholder="请输入内容"
+              v-model="input2">
+    </el-input>
+    <el-button plain style="float:right;margin-right: 20px" @click="dialogmychcourse=true">已选课程</el-button>
+    <template>
+        <el-table
+                ref="filterTable"
+                :data="tableData"
+                style="width:1230px">
+            <el-table-column
+                    prop="chcourseid"
+                    label="课程号"
+                    sortable
+                    column-key="date">
+            </el-table-column>
+            <el-table-column
+                    prop="chname"
+                    label="课程名">
+            </el-table-column>
+            <el-table-column
+                    prop="chtype"
+                    label="课程类型"
+                    :filters="type"
+                    :filter-method="filterTag"
+                    filter-placement="bottom-end">
+                <template slot-scope="scope">
+                    <el-tag  :type="scope.row.chtype === '材料类' ? 'primary' : 'success'"  disable-transitions>
+                        {{scope.row.chtype}}
+                    </el-tag>
+                </template>
+            </el-table-column>
+            <el-table-column  prop="chcourseid">
+                    <template slot-scope="scope" >
+                        <el-button plain @click="clickchcourse(scope.$index)">详细信息</el-button>
+                    </template>
+            </el-table-column>
+        </el-table>
+    </template>
+
+    <el-dialog title="我的选课:" :visible.sync="dialogmychcourse" width="70%">
+        <el-table :data="chcourse">
+            <el-table-column property="chid" label="课程号" width="200"></el-table-column>
+            <el-table-column property="chname" label="课程名" width="200"></el-table-column>
+            <el-table-column property="grades" label="课程成绩" width="200"></el-table-column>
+            <el-table-column property="chid">
+                <template slot-scope="scope">
+                    <el-popconfirm
+                            confirm-button-text='是'
+                            cancel-button-text='否'
+                            @confirm="deletchcourse(scope.$index)"
+                            icon="el-icon-info"
+                            icon-color="red"
+                            title="是否确认退选该课程？">
+                        <el-button slot="reference" type="danger" plain slot="reference">退课</el-button>
+                    </el-popconfirm>
+                </template>
+            </el-table-column>
+        </el-table>
+    </el-dialog>
+
+    <el-dialog title="课程信息" :visible.sync="clickch">
+    <el-form :model="clickform">
+        <el-form-item label="课程号:" :label-width="'120px'">
+            {{clickform.id}}
+        </el-form-item>
+        <el-form-item label="课程名称:" :label-width="'120px'">
+            {{clickform.name}}
+        </el-form-item>
+        <el-form-item label="课程类型:" :label-width="'120px'">
+            {{clickform.type}}
+        </el-form-item>
+        <el-form-item label="课程简介:" :label-width="'120px'" style="width: 70%">
+            {{clickform.desc}}
+        </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="studentchoicech">确认选课</el-button>
+    </div>
+    </el-dialog>
+
+    <el-pagination
+            page-size="5"
+            layout="prev, pager, next"
+            :total="counts"
+            :current-page="pagename"
+            @current-change=" handleCurrentChange"
+    >
+    </el-pagination>
+</div>
+</body>
+<script>
+    var vue=new Vue({
+        el:"#app",
+        data: {
+            type:[],
+            tableData: [],
+            chcourse:[],
+            clickform:{
+                id:'',
+                name: '',
+                type: '',
+                desc: '',
+            },
+            input2:'',
+            counts:'',
+            mych: false,
+            addtype:'',
+            pagename:1,
+            dialogmychcourse: false,
+            clickch:false,
+        },
+        methods: {
+            filterTag(value, row) {
+                return row.chtype === value;
+            },
+            clickchcourse(index){
+                var i=index;
+                this.clickform.id=this.tableData[i].chcourseid;
+                this.clickform.name=this.tableData[i].chname;
+                this.clickform.type=this.tableData[i].chtype;
+                this.clickform.desc=this.tableData[i].introduction;
+                this.clickch=true;
+            },
+            serach(){
+                this.count();
+                this.pagename=1;
+                this.getchcourse();
+            },
+            getchcourse(){
+                var params=new URLSearchParams();
+                params.append("chname",this.input2);
+                params.append("pagename",this.pagename);
+                axios.post("selectch",params).then(d=>{
+                    //console.log(d.data.data.length);
+                    this.tableData=d.data.data;
+                })
+            },
+            getalltype(){
+                axios.post("gettype").then(d=>{
+                    for(i in d.data.data){
+                        var obj={
+                            text:d.data.data[i],
+                            value:d.data.data[i],
+                        }
+                        this.type.push(obj);
+                    }
+                })
+            },
+            count(){
+                this.pagename=1;
+                var params=new URLSearchParams();
+                params.append("chname",this.input2)
+                axios.post("count",params).then(d=>{
+                    this.counts = d.data;
+                })
+            },
+            handleCurrentChange: function(pagename) {
+                this.pagename = pagename
+                this.getchcourse();
+            },
+            deletchcourse(index){
+                if (this.chcourse[index].grades != null){
+                    alert("已有成绩,无法退课");
+                    return;
+                }
+                console.log(this.chcourse[index]);
+                var params = new URLSearchParams();
+                params.append("chid",this.chcourse[index].chid);
+                axios.post("deletemych",params).then(d=>{
+                    this.mychchourse();
+                })
+                this.mych = false;
+            },
+            studentchoicech(){
+                var params=new URLSearchParams();
+                params.append("chid", this.clickform.id);
+                axios.post("studentaddch",params).then(d=>{
+                    alert(d.data.msg);
+                    this.mychchourse();
+                })
+                this.clickch=false;
+            },
+            mychchourse(){
+                axios.post("selectmych").then(d=>{
+                    this.chcourse=[];
+                    this.chcourse=d.data.data;
+                })
+            }
+
+        },
+        mounted:function () {
+            //       axios.post("action").then(d=>{
+                this.mychchourse();
+                this.count();
+                this.getchcourse();
+                this.getalltype();
+            //           })
+        }
+    })
+</script>
+</html>

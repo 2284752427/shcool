@@ -1,0 +1,321 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>课程表</title>
+    <script src="js/jquery-1.9.1.js"></script>
+    <script src="js/vue.js"></script>
+    <script src="js/axios.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+        body{
+            position: fixed;
+        }
+        #app{
+            width: 1050px;
+            font-family: 幼圆;
+        }
+        #mytable{
+            text-align: center;
+        }
+        #mytable tr td{
+            display: block;
+            height: 80px;
+            width: 130px;
+            white-space: pre-line;
+        }
+        #mytable tr{
+            display: inline;
+            float: left;
+            height: 80px;
+            width: 130px;
+
+        }
+        #mytable thead tr th{
+            height: 80px;
+            width: 130px;
+        }
+        .trs{
+            padding: 40px 0px;
+        }
+        .addcoursebackgroud{
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: rgba(0,0,0,0.5);
+        }
+        .addcorse{
+            width: 45%;
+            overflow: hidden;
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            margin:auto;
+            border-radius: 8px;
+            background-color: #fff;
+            transform: translateY(-50%);
+            -webkit-transform: translateY(-50%);
+            white-space: pre-line;
+        }
+        .addcorse .startmain {
+            width: 100%;
+            height: 50px;
+            line-height: 57px;
+            text-align: center;
+            font-size: 18px;
+            color:cornflowerblue;
+        }
+
+        .addcorse .main{
+            margin: 0 auto;
+            font-size: 14px;
+            line-height: 20px;
+            text-align: center;
+            padding-left: 21px;
+            padding-right: 21px;
+            padding-bottom: 24px;
+        }
+
+        .addcorse .endmain{
+            border-top: 1px solid #eee;
+            width: 100%;
+            height:46px;
+            color: #4691ee;
+            text-align: center;
+            font-size: 16px;
+            line-height: 46px;
+        }
+        .select:hover{
+            font-weight: bold;
+            color: salmon;
+        }
+
+    </style>
+</head>
+<body>
+<div id="app">
+    <div  style="float:right;height: 50px;">
+        学期:
+        <template>
+            <el-select v-model="semester"@change="newmounted" style="width: 140px">
+                <el-option
+                        v-for="item in semesters"
+                        :value="item">
+                </el-option>
+            </el-select>
+        </template>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        第
+        <template>
+            <el-select v-model="week"@change="newmounted" style="width: 140px">
+                <el-option
+                        v-for="item in 18"
+                        :value="item">
+                </el-option>
+            </el-select>
+        </template>
+        周
+    </div>
+    <table style="float:right;" id="mytable">
+        <thead>
+        <tr><th></th></tr>
+        <tr v-for="item in weekname" style="border-bottom: gray 1px dashed;">
+            <th > 周{{item}} </th>
+        </tr>
+        </thead>
+        <tbody >
+        <tr >
+            <td style="background-color: darkslateblue;color: white"><br><br>第一节课<br> 8:30-10:05</td>
+            <td style="background-color: darkslateblue;color: white"><br><br>第二节课<br> 10:25-12:00</td>
+            <td style="background-color: darkslateblue;color: white"><br><br>第三节课<br> 14:00-15:35</td>
+            <td style="background-color: darkslateblue;color: white"><br><br>第四节课<br> 15:55-17:30</td>
+            <td style="background-color: darkslateblue;color: white ;padding-bottom: 15px"><br><br>第五节课<br> 19:00-20:30</td>
+        </tr>
+        <tr v-for="(item,index) in weekdays" class="trs">
+            <td>{{item.class1}}</td>
+            <td>{{item.class2}}</td>
+            <td>{{item.class3}}</td>
+            <td>{{item.class4}}</td>
+            <td>{{item.class5}}</td>
+        </tr>
+        </tbody>
+    </table>
+    </div>
+</div>
+</body>
+
+<script>
+    var vue=new Vue({
+        el:"#app",
+        data:{
+            getweek:[],
+            model:[
+                {daytime:"1",class1:"-",class2:"-",class3:"-",class4:"-",class5:"-"},
+                {daytime:"2",class1:"-",class2:"-",class3:"-",class4:"-",class5:"-"},
+                {daytime:"3",class1:"-",class2:"-",class3:"-",class4:"-",class5:"-"},
+                {daytime:"4",class1:"-",class2:"-",class3:"-",class4:"-",class5:"-"},
+                {daytime:"5",class1:"-",class2:"-",class3:"-",class4:"-",class5:"-"},
+                {daytime:"6",class1:"-",class2:"-",class3:"-",class4:"-",class5:"-"},
+                {daytime:"7",class1:"-",class2:"-",class3:"-",class4:"-",class5:"-"}],
+            weekdays:[],
+            weekname:["一","二","三","四","五","六","日"],
+            semester:'',
+            semesters:[],
+            teacherid:"",
+            teachers:[],
+            addclass:'',
+            classes:[],
+            week:'1',
+            see:false,
+            updatecourse:false,
+            newcourse:false,
+            visible: false,
+            course:[],
+            clickcourse:'',
+            clickdays:'',
+            howcourseid:'',
+            courseinfo:[],
+            news:'',
+            cname:'',
+        },
+        methods:{
+            newmounted(){
+                this.weekdays=JSON.parse(JSON.stringify(this.model));
+                var params=new URLSearchParams();
+                params.append("week",this.week);
+                params.append("semester",this.semester);
+                axios.post("teachercoursebyteacher",params).then(d=>{
+                    this.getweek=d.data.data;
+                    for(key in this.weekdays){
+                        //取得的值是当前班级当前学期当前周的所有课表,需要排序
+                        for (i in this.getweek){
+                            //如果time(上课时间)是第一节,且是第x天
+                            if(this.getweek[i].time==1 && this.getweek[i].weekday == this.weekdays[key].daytime)
+                                this.weekdays[key].class1=this.getweek[i].cname+'\n'+this.getweek[i].classno
+                            if(this.getweek[i].time==2 && this.getweek[i].weekday == this.weekdays[key].daytime)
+                                this.weekdays[key].class2=this.getweek[i].cname+'\n'+this.getweek[i].classno;
+                            if(this.getweek[i].time==3 && this.getweek[i].weekday == this.weekdays[key].daytime)
+                                this.weekdays[key].class3=this.getweek[i].cname+'\n'+this.getweek[i].classno;
+                            if(this.getweek[i].time==4 && this.getweek[i].weekday == this.weekdays[key].daytime)
+                                this.weekdays[key].class4=this.getweek[i].cname+'\n'+this.getweek[i].classno;
+                            if(this.getweek[i].time==5 && this.getweek[i].weekday == this.weekdays[key].daytime)
+                                this.weekdays[key].class5=this.getweek[i].cname+'\n'+this.getweek[i].classno;
+                        }
+                    }
+                })
+            },
+            addcourse(){
+                if (this.howcourseid==''){
+                    this.see=false;
+                    alert("未添加数据");
+                }else {
+                    this.see=false;
+                    var params=new URLSearchParams();
+                    params.append("week",this.week);
+                    params.append("weekday",this.clickdays);
+                    params.append("time",this.clickcourse);
+                    params.append("coursid",this.howcourseid);
+                    params.append("semester",this.semester);
+                    axios.post("addcubyid",params).then(d=>{
+                        if (!d.data){
+                            alert("该班级已有其他排课");
+                        }
+                        this.newmounted();
+                    });
+                }
+            },
+            findsemester(){
+                axios.post("findsemester").then(d=>{
+                    this.semesters =d.data.data;
+                })
+            },
+            findallteacher(){
+                axios.post("allteacher").then(d=>{
+                    var select=d.data.data;
+                    for (index in select){
+                        this.teachers[index]=select[index].teachername+","+select[index].teacherid;
+                    }
+                })
+            },
+            findallcouse(){
+                var params=new URLSearchParams();
+                params.append("tid",this.teacherid);
+                params.append("semester",this.semester);
+                axios.post("findcoursebytid",params).then(d=>{
+                    this.courseinfo=[];
+                    var select=d.data.data;
+                    var map=new Map();
+                    for (index in select){
+                        map.set(select[index].courseid,select[index].cname+','+select[index].classes);
+                        // this.courseinfo[index].value=select[index].cname+'  '+select[index].classes;
+                        // this.courseinfo[index].math=select[index].courseid;
+                    }
+                    this.courseinfo=map;
+                })
+            },
+            doubleclicks(num,index){
+                this.cnames='';
+                if (num==1){this.cnames=this.weekdays[index-1].class1;}
+                else if(num==2){this.cnames=this.weekdays[index-1].class2;}
+                else if(num==3){this.cnames=this.weekdays[index-1].class3;}
+                else if(num==4){this.cnames=this.weekdays[index-1].class4;}
+                else if(num==5){this.cnames=this.weekdays[index-1].class5;}
+                this.clickdays=index;
+                this.clickcourse=num;
+                this.news="第"+this.week+"周 第"+this.clickdays+"天 第"+this.clickcourse+"节课";
+                this.findallcouse();
+                this.howcourseid='';
+                if (this.cnames != '-'){
+                    this.updatecourse=true;
+                }else {
+                    this.see=true;
+                }
+
+            },
+            deletecourse(){
+                this.visible = false;
+                var params=new URLSearchParams();
+                params.append("classno",this.cnames);
+                params.append("week",this.week);
+                params.append("weekday",this.clickdays);
+                params.append("time",this.clickcourse);
+                params.append("semester",this.semester);
+                axios.post("deletebyid",params).then(d=>{
+                    this.updatecourse=false;
+                    this.newmounted();
+                });
+
+            },
+            updatecourses(){
+                this.updatecourse=false;
+                this.newcourse=true;
+                var params=new URLSearchParams();
+                params.append("cname",this.cnames)
+                params.append("week",this.week);
+                params.append("weekday",this.clickdays);
+                params.append("time",this.clickcourse);
+                params.append("coursid",this.howcourseid);
+                params.append("semester",this.semester);
+                axios.post("updatebytid",params).then(d=>{
+                    if (!d.data){
+                        alert("该班级已有其他排课");
+                    }
+                    this.newmounted();
+                })
+                this.newcourse=false;
+            }
+        },
+        mounted:function () {
+            this.findallteacher();
+            this.findsemester();
+        }
+    })
+</script>
+
+</html>

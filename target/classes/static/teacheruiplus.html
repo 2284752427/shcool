@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>教务老师主界面</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/nprogress.css">
+
+</head>
+<body>
+
+<div id="desktop">
+  <div id="app">
+  <div class="lantern"></div>
+  <ul class="list">
+<!--    <li data-href="http://www.baidu.com/"><img src="img/logo.png" alt="#"><span>Website</span></li>-->
+    <li data-href="teacherplusweb.html"><img src="img/预览图3.png" alt="#"><span>教师专区</span></li>
+    <li data-href="teacherselfmessages.html"><img src="img/预览图4.png" alt="#"><span>个人信息</span></li>
+    <li data-event="about"><img src="img/预览图1.png" alt="#"><span>关于软件</span></li>
+    <li @dblclick="exit"><img src="img/预览图5.png" alt="#"><span>退出登录</span></li>
+  </ul>
+  <div class="date">
+    <div class="date-wrapper">
+      <div class="mask"></div>
+      <div class="left"></div>
+      <div class="right">
+        <p class="time">21 : 13 : 34</p>
+        <p class="day">2017年08月17日</p>
+        <p class="week">星期四</p>
+      </div>
+    </div>
+    <div class="close"></div>
+  </div>
+  <div class="about">
+    <ul>
+      <li>学生信息管理系统</li>
+      <li>学校:湖南工学院</li>
+      <li>Email: 2284752427@qq.com</li>
+      <li>欢迎使用！</li>
+    </ul>
+    <div class="mask"></div>
+    <div class="close"></div>
+  </div>
+  <div class="dragSelect"></div>
+  <div class="contextmenu">
+    <div class="header">Do something.</div>
+    <ul>
+      <li data-value="create"><img src="img/add.png" alt="#">Create file</li>
+      <li data-value="cancel"><img src="img/cancel.png" alt="#">Cancel</li>
+      <li data-value="edit"><img src="img/edit.png" alt="#">Edit file</li>
+      <li data-value="refresh"><img src="img/refresh.png" alt="#">Refresh</li>
+      <li data-value="trash"><img src="img/trash.png" alt="#">Delete file</li>
+    </ul>
+  </div>
+  <div class="dialog">
+    <div class="cont">
+      <input type="text" placeholder="Title Name">
+      <input type="text" placeholder="Images URL">
+      <input type="text" placeholder="Address URL">
+      <span>Confirm</span>
+      <span>Cancel</span>
+    </div>
+  </div>
+  </div>
+</div>
+
+<script src="js/tools.js"></script>
+<script src="js/tween.js"></script>
+<script src="js/requestAnimate.js"></script>
+<script src="js/startMove.js"></script>
+<script src="js/object.js"></script>
+<script src="js/nprogress.js"></script>
+<script src="js/index.js"></script>
+
+<!-- Lantern -->
+<script src="js/jquery.min.js"></script>
+<script src="js/velocity.min.js"></script>
+<script src="js/lantern.js"></script>
+<script type="text/javascript" src="js/vue.js"></script>
+<script type="text/javascript" src="js/axios.js"></script>
+<script>
+  var app = new Vue({
+    el: "#app",
+    data:{
+
+    },
+    methods:{
+      exit(){
+        axios.post("loginout").then(yc=>{
+          if (yc.data.code==1){
+            location.href = "index.html";
+          }
+        })
+      }
+    }
+
+  })
+</script>
+
+</body>
+</html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>教务老师操作</title>
+    <!-- 引入样式 -->
+    <script type="text/javascript" src="js/jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="js/vue.js"></script>
+    <script type="text/javascript" src="js/axios.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+
+        .el-aside {
+            color: #333;
+            position: relative;
+        }
+        .el-submenu__title{
+            width: 200px;
+        }
+        .el-menu--inline{
+            width: 200px;
+        }
+        .el-carousel__container{
+            height: 600px;
+        }
+        .el-menu{
+            width: 199px;
+            background-image: linear-gradient(45deg, #ee9ca7 0%, #ffdde1 100%);
+        }
+        .header{
+            font-size: 55px;
+            font-style:italic;
+            font-weight: bolder;
+            /*height: 55px;*/
+            padding-right:100px;
+            color:#C0C4CC;
+        }
+        .el-dropdown-link {
+            cursor: pointer;
+            color: #409EFF;
+        }
+
+
+
+    </style>
+
+
+    <body>
+        <div id="app">
+            <el-container style="height: 730px; border: 1px solid #eee;" >
+                <el-aside width="200px" style="background-image: linear-gradient(45deg, #ee9ca7 0%, #ffdde1 100%);margin-left: 0px;">
+                    <el-col :span="12">
+                        <h5 style="text-align: center;font-size: 20px;font-style: italic;padding-left: 70px">目录</h5>
+                        <el-menu
+                                default-active="1"
+                                class="el-menu-vertical-demo"
+                                text-color="black"
+                                unique-opened="true">
+
+                            <el-menu-item index="1" style="width: 200px" @click="tosy()"><i class="el-icon-location"></i>&nbsp;&nbsp;首&nbsp;&nbsp;&nbsp;&nbsp;页</el-menu-item>
+                            <el-submenu index="2">
+                                <template slot="title">
+                                    <i class="el-icon-location"></i>
+                                    <span>基本信息</span>
+                                </template>
+                                <el-menu-item-group>
+                                    <el-menu-item index="2-1" @click="routerteachersmage">教师信息</el-menu-item>
+                                    <el-menu-item index="2-2" @click="routerstudentsmage">学生信息</el-menu-item>
+                                </el-menu-item-group>
+                            </el-submenu>
+                            <el-submenu index="3">
+                                <template slot="title">
+                                    <i class="el-icon-location"></i>
+                                    <span>学生成绩</span>
+                                </template>
+                                <el-menu-item-group>
+                                    <el-menu-item index="3-1" @click="routerstudentsgrades()">考试成绩</el-menu-item>
+                                    <el-menu-item index="3-2" @click="routerexamination()">补考成绩</el-menu-item>
+                                    <el-menu-item index="3-3" @click="routerrestart()">重修成绩</el-menu-item>
+                                </el-menu-item-group>
+                            </el-submenu>
+                            <el-submenu index="4">
+                                <template slot="title">
+                                    <i class="el-icon-location"></i>
+                                    <span>课表查询</span>
+                                </template>
+                                <el-menu-item-group>
+                                    <el-menu-item index="4-1" @click="byclssno()">学生课表</el-menu-item>
+                                    <el-menu-item index="4-2" @click="byteacherid()">老师排课</el-menu-item>
+                                </el-menu-item-group>
+                            </el-submenu>
+                            <el-menu-item index="5"  @click="routercost"><i class="el-icon-location"></i>&nbsp费用查询</el-menu-item>
+                            <el-submenu index="6">
+                                <template slot="title">
+                                    <i class="el-icon-location"></i>
+                                    <span>考务管理</span>
+                                </template>
+                                <el-menu-item-group>
+                                    <el-menu-item index="6-1" @click="routertzbk()">补考管理</el-menu-item>
+                                    <el-menu-item index="6-2" @click="routertzcx()">重修管理</el-menu-item>
+                                </el-menu-item-group>
+                            </el-submenu>
+                            <el-submenu index="7">
+                                <template slot="title">
+                                    <i class="el-icon-location"></i>
+                                    <span>课程管理</span>
+                                </template>
+                                <el-menu-item-group>
+                                    <el-menu-item index="7-1" @click="routercrouse()">课程信息</el-menu-item>
+                                    <el-menu-item index="7-2" @click="choicechcourse()">选课管理</el-menu-item>
+                                </el-menu-item-group>
+                            </el-submenu>
+                        </el-menu>
+                    </el-col>
+                    </el-menu>
+                </el-aside>
+
+                <el-container style="background-image: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);">
+                    <el-main style="margin-top: 30px;margin-left: 10px">
+                        <div   v-if="tb_1">
+                        <template>
+                            <el-carousel :interval="3000" arrow="always" >
+                                <el-carousel-item v-for="item in imagessrc" :key="item">
+                                    <img :src="item"style="height: 600px;width: 1270px;background-repeat: no-repeat;">
+                                </el-carousel-item>
+                            </el-carousel>
+                        </template>
+                        </div>
+                        <iframe v-if="tb_2" src="teachermessages.html" height="650px" width="1250px" frameborder="0" style="float: left"></iframe>
+                        <iframe v-if="tb_3" src="plusteacherfindsmage.html" height="650px" width="1250px" frameborder="0" style="float: left"></iframe>
+                        <iframe v-if="tb_4" src="plusstudentsgrades.html" height="650px" width="1250px" frameborder="0" style="float: left"></iframe>
+                        <iframe v-if="tb_5" src="plusstudentexamination.html" height="650px" width="1250px" frameborder="0" style="float: left"></iframe>
+                        <iframe v-if="tb_6" src="plusstudentrestart.html" height="650px" width="1250px" frameborder="0" style="float: left"></iframe>
+                        <iframe v-if="tb_7" src="plusfindcost.html" height="650px" width="1250px" frameborder="0" style="float: left"></iframe>
+                        <iframe v-if="tb_8" src="plustzbk.html" height="650px" width="1250px" frameborder="0" style="float: left"></iframe>
+                        <iframe v-if="tb_9" src="plustzcx.html" height="650px" width="1250px" frameborder="0" style="float: left"></iframe>
+                        <iframe v-if="tb_10" src="plusteacherfindcourse.html" height="650px" width="1250px" frameborder="0" style="float: left"></iframe>
+                        <iframe v-if="tb_11" src="byclassno.html" height="650px" width="1250px" frameborder="0" style="float: left"></iframe>
+                        <iframe v-if="tb_12" src="byteacherid.html" height="650px" width="1250px" frameborder="0" style="float: left"></iframe>
+                        <iframe v-if="tb_13" src="addchcourse.html" height="650px" width="1250px" frameborder="0" style="float: left"></iframe>
+                    </el-main>
+                </el-container>
+            </el-container>
+        </div>
+
+
+
+
+
+     <script>
+         var app = new Vue({
+             el:"#app",
+             data:{
+                 tb_1:true,
+                 tb_2:false,
+                 tb_3:false,
+                 tb_4:false,
+                 tb_5:false,
+                 tb_6:false,
+                 tb_7:false,
+                 tb_8:false,
+                 tb_9:false,
+                 tb_10:false,
+                 tb_11:false,
+                 tb_12:false,
+                 tb_13:false,
+                 imagessrc:['img/tu1.jpg','img/tu2.jpg','img/tu3.jpg','img/tu4.jpg'],
+             },
+             methods: {
+                 tosy(){
+                     this.tb_1 = true;
+                     this.tb_2 = false;
+                     this.tb_3 = false;
+                     this.tb_4 = false;
+                     this.tb_5 = false;
+                     this.tb_6 = false;
+                     this.tb_7 = false;
+                     this.tb_8 = false;
+                     this.tb_9 = false;
+                     this.tb_10 = false;
+                     this.tb_11 = false;
+                     this.tb_12 = false;
+                     this.tb_13 = false;
+                 },
+                 routerteachersmage(){
+                     this.tb_1 = false;
+                     this.tb_2 =true;
+                     this.tb_3 = false;
+                     this.tb_4 = false;
+                     this.tb_5 = false;
+                     this.tb_6 = false;
+                     this.tb_7 = false;
+                     this.tb_8 = false;
+                     this.tb_9 = false;
+                     this.tb_10 = false;
+                     this.tb_11 = false;
+                     this.tb_12 = false;
+                     this.tb_13 = false;
+                 },
+                 routerstudentsmage(){
+                     this.tb_1=false;
+                     this.tb_2=false;
+                     this.tb_3=true;
+                     this.tb_4 = false;
+                     this.tb_5 = false;
+                     this.tb_6 = false;
+                     this.tb_7 = false;
+                     this.tb_8 = false;
+                     this.tb_9 = false;
+                     this.tb_10 = false;
+                     this.tb_11 = false;
+                     this.tb_12 = false;
+                     this.tb_13 = false;
+                 },
+                 routerstudentsgrades(){
+                     this.tb_3 = false;
+                     this.tb_1 = false;
+                     this.tb_2 = false;
+                     this.tb_4 = true;
+                     this.tb_5 = false;
+                     this.tb_6 = false;
+                     this.tb_7 = false;
+                     this.tb_8 = false;
+                     this.tb_9 = false;
+                     this.tb_10 = false;
+                     this.tb_11 = false;
+                     this.tb_12 = false;
+                     this.tb_13 = false;
+                 },
+                 routerexamination(){
+                     this.tb_3 = false;
+                     this.tb_1 = false;
+                     this.tb_2 = false;
+                     this.tb_4 = false;
+                     this.tb_5 = true;
+                     this.tb_6 = false;
+                     this.tb_7 = false;
+                     this.tb_8 = false;
+                     this.tb_9 = false;
+                     this.tb_10 = false;
+                     this.tb_11 = false;
+                     this.tb_12 = false;
+                     this.tb_13 = false;
+
+                 },
+                 routerrestart(){
+                     this.tb_3 = false;
+                     this.tb_1 = false;
+                     this.tb_2 = false;
+                     this.tb_4 = false;
+                     this.tb_5 = false;
+                     this.tb_6 = true;
+                     this.tb_7 = false;
+                     this.tb_8 = false;
+                     this.tb_9 = false;
+                     this.tb_10 = false;
+                     this.tb_11 = false;
+                     this.tb_12 = false;
+                     this.tb_13 = false;
+                 },
+                 routercost(){
+                     this.tb_3 = false;
+                     this.tb_1 = false;
+                     this.tb_2 = false;
+                     this.tb_4 = false;
+                     this.tb_5 = false;
+                     this.tb_6 = false;
+                     this.tb_7 = true;
+                     this.tb_8 = false;
+                     this.tb_9 = false;
+                     this.tb_10 = false;
+                     this.tb_11 = false;
+                     this.tb_12 = false;
+                     this.tb_13 = false;
+                 },
+                 routertzbk(){
+                     this.tb_3 = false;
+                     this.tb_1 = false;
+                     this.tb_2 = false;
+                     this.tb_4 = false;
+                     this.tb_5 = false;
+                     this.tb_6 = false;
+                     this.tb_7 = false;
+                     this.tb_8 = true;
+                     this.tb_9 = false;
+                     this.tb_10 = false;
+                     this.tb_11 = false;
+                     this.tb_12 = false;
+                     this.tb_13 = false;
+                 },
+                 routertzcx(){
+                     this.tb_3 = false;
+                     this.tb_1 = false;
+                     this.tb_2 = false;
+                     this.tb_4 = false;
+                     this.tb_5 = false;
+                     this.tb_6 = false;
+                     this.tb_7 = false;
+                     this.tb_8 = false;
+                     this.tb_9 = true;
+                     this.tb_10 = false;
+                     this.tb_11 = false;
+                     this.tb_12 = false;
+                     this.tb_13 = false;
+                 },
+                 routercrouse(){
+                     this.tb_3 = false;
+                     this.tb_1 = false;
+                     this.tb_2 = false;
+                     this.tb_4 = false;
+                     this.tb_5 = false;
+                     this.tb_6 = false;
+                     this.tb_7 = false;
+                     this.tb_8 = false;
+                     this.tb_9 = false;
+                     this.tb_10 = true;
+                     this.tb_11 = false;
+                     this.tb_12 = false;
+                     this.tb_13 = false;
+                 },
+                 byclssno(){
+                     this.tb_3 = false;
+                     this.tb_1 = false;
+                     this.tb_2 = false;
+                     this.tb_4 = false;
+                     this.tb_5 = false;
+                     this.tb_6 = false;
+                     this.tb_7 = false;
+                     this.tb_8 = false;
+                     this.tb_9 = false;
+                     this.tb_10 = false;
+                     this.tb_11 = true;
+                     this.tb_12 = false;
+                     this.tb_13 = false;
+                 },
+                 byteacherid(){
+                     this.tb_3 = false;
+                     this.tb_1 = false;
+                     this.tb_2 = false;
+                     this.tb_4 = false;
+                     this.tb_5 = false;
+                     this.tb_6 = false;
+                     this.tb_7 = false;
+                     this.tb_8 = false;
+                     this.tb_9 = false;
+                     this.tb_10 = false;
+                     this.tb_11 = false;
+                     this.tb_12 = true;
+                     this.tb_13 = false;
+                 },
+                 choicechcourse(){
+                     this.tb_3 = false;
+                     this.tb_1 = false;
+                     this.tb_2 = false;
+                     this.tb_4 = false;
+                     this.tb_5 = false;
+                     this.tb_6 = false;
+                     this.tb_7 = false;
+                     this.tb_8 = false;
+                     this.tb_9 = false;
+                     this.tb_10 = false;
+                     this.tb_11 = false;
+                     this.tb_12 = false;
+                     this.tb_13 = true;
+                 }
+
+             },
+             mounted:function(){
+
+             },
+             beforeDestroy() {
+
+             }
+         })
+     </script>
+
+
+
+
+
+</body>
+</html>

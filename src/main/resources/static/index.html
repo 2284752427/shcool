@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+    <style>
+        body {
+            background-image: url(img/ll.png);
+            background-repeat: no-repeat;
+            background-size: 100%;
+
+        }
+
+        #btn {
+            width: 170px;
+            border-radius: 10px;
+            height: 35px;
+            line-height: 15px;
+            cursor: pointer;
+            margin-top: 20px;
+            background-image: linear-gradient(-225deg, #FFE29F 0%, #FFA99F 48%, #ff719a 100%);
+            outline: medium;
+            border: 1px solid black;
+            margin-left: 80px;
+        }
+
+        #btn_1 {
+            width: 170px;
+            border-radius: 10px;
+            height: 35px;
+            line-height: 15px;
+            cursor: pointer;
+            margin-top: 20px;
+            background-image: linear-gradient(-225deg, #FFE29F 0%, #FFA99F 48%, #ff719a 100%);
+            outline: medium;
+            border: 1px solid black;
+        }
+
+        #login {
+            margin: 100px auto;
+            background-color: rgba(0, 0, 0, 0.1);
+            width: 500px;
+            height: 400px;
+            border-radius: 10px;
+        }
+
+        #la {
+            width: 300px;
+        }
+
+        #yzm {
+            width: 220px;
+            position: relative;
+        }
+        #yzm_img{
+            position: absolute;
+            left: 230px;
+        }
+        .el-form {
+            margin-left: 20px;
+            margin-top: 20px;
+        }
+
+
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="login">
+        <p style="font-family: '微软雅黑'; font-weight: bolder; font-size: 35px;text-align: center">LOGIN</p>
+        <div style="padding-left: 130px">
+            <template>
+                <el-radio v-model="radio" label="student">学生端</el-radio>
+                <el-radio v-model="radio" label="teacher" style="margin-left: 100px">教师端</el-radio>
+            </template>
+        </div>
+        <el-form :label-position="right" label-width="100px">
+            <el-form-item label="用户名:">
+                <el-input id="la" placeholder="请输入用户名" v-model="username"></el-input>
+            </el-form-item>
+            <el-form-item label="密码:">
+                <el-input id="la" placeholder="请输入密码" type="password" v-model="pwd"></el-input>
+            </el-form-item>
+            <el-form-item label="验证码:">
+                <el-input id="yzm" placeholder="请输入验证码" v-model="yzm"></el-input>
+                <img :src="varifycode" id="yzm_img" width="70px" height="40px" @click="changevcode()"
+                     style="cursor: pointer"/>
+            </el-form-item>
+        </el-form>
+
+        <el-button id="btn" type="primary" @click="login" @keyup.enter="login">LOGIN</el-button>
+        <el-button id="btn_1" @click="open">REGISTER</el-button>
+
+
+    </div>
+</div>
+<script type="text/javascript" src="js/jquery-1.9.1.js"></script>
+<script type="text/javascript" src="js/vue.js"></script>
+<script type="text/javascript" src="js/axios.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script>
+    var app = new Vue({
+        el: "#app",
+        data: {
+            username: "",
+            pwd: "",
+            yzm: "",
+            varifycode: "varifyCode.action",
+            urllogin: "",
+            $router: "",
+            radio: '',
+        },
+        methods: {
+
+            changevcode() {
+                var b = Math.round(Math.random() * 10000);
+                this.varifycode = "varifyCode.action?op=" + b;
+            },
+            keyDown(e) {
+                // 回车则执行登录方法 enter键的ASCII是13
+                if (e.keyCode === 13) {
+                    this.login(); // 定义的登录方法
+                }
+            },
+            login() {
+                if (this.radio == '' || this.radio == undefined || this.radio == null) {
+                    this.$message({
+                        type: 'warning',
+                        message: "请确认身份！"
+                    });
+                    return;
+                }
+                var params = new URLSearchParams();
+                params.append("username", this.username);
+                params.append("pwd", this.pwd);
+                params.append("valcode", this.yzm);
+                if (this.radio == 'student') {
+                    axios.post("lgstudent", params).then(yc => {
+                        if (yc.data.code == 1) {
+                            location.href = 'student.html';
+                        } else {
+                            this.$message({
+                                type: 'error',
+                                message: yc.data.msg
+                            });
+                        }
+
+                    })
+                } else {
+                    axios.post("lgteacher", params).then(yc => {
+                        if (yc.data.code == 1) {
+                            location.href = 'teacherui.html';
+                        } else if (yc.data.code == 2) {
+                            location.href = "teacheruiplus.html";
+                        } else {
+                            this.$message({
+                                type: 'error',
+                                message: yc.data.msg
+                            });
+                        }
+
+                    })
+                }
+
+
+            },
+            open() {
+                this.$prompt('请输入授权码', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                }).then(({value}) => {
+                    if (value == 'CWJNB' || value == 'cwjnb' || value == 'cwjyyds' || value == 'CWJYYDS') {
+                        var params = new URLSearchParams();
+                        params.append("shouquanma", value);
+                        axios.post("goregister", params).then(yc => {
+                            if (yc.data.code == 1) {
+                                location.href = "register.html";
+                            }
+                        });
+                    } else {
+                        this.$message({
+                            type: 'error',
+                            message: '授权码错误'
+                        });
+                    }
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '取消输入'
+                    });
+                });
+            },
+
+        },
+        mounted() {
+            // 绑定监听事件
+            window.addEventListener("keydown", this.keyDown);
+        },
+        destroyed() {
+            // 销毁事件
+            window.removeEventListener("keydown", this.keyDown, false);
+        }
+    })
+</script>
+</body>
+</html>

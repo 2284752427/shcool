@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!-- 引入样式 -->
+    <script type="text/javascript" src="js/jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="js/vue.js"></script>
+    <script type="text/javascript" src="js/axios.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+</head>
+<style>
+    td{
+        text-align: center;
+        font-weight: bold;
+        color: gray;
+
+    }
+    #sousuo{
+        margin-top: 10px;
+        margin-left: 50px;
+
+    }
+
+</style>
+
+
+<body>
+<div id="app">
+    <div id="sousuo">
+        <template>
+            <el-select v-model="myselectsemester" clearable placeholder="请选择学年" @change="xs">
+                <el-option
+                        v-for="item in selectsemester"
+                        :value="item">
+                </el-option>
+            </el-select>
+        </template>
+        <template>
+            <el-select v-model="myselectclasses" clearable placeholder="请选择班级"  @change="findAll">
+                <el-option
+                        v-for="item in selectclasses"
+                        :value="item">
+                </el-option>
+            </el-select>
+        </template>
+        <el-input v-model="input" placeholder="请输入课程号或名" style="width: 200px;"></el-input>
+        <el-button icon="el-icon-search" circle style="background-image: linear-gradient(-225deg, #FFE29F 0%, #FFA99F 48%, #ff719a 100%);" @click="findAll()"></el-button>
+    </div>
+    <table style="width:1230px;margin-top: 30px" v-loading="istable">
+        <tr>
+            <td>课程号</td>
+            <td>课程名</td>
+            <td>所教班级</td>
+            <td>任教学年</td>
+            <td>课程类型</td>
+            <td>课时</td>
+            <td>学分</td>
+        </tr>
+        <tr v-for="(item,index) in crouse">
+            <td >{{item.courseid}}</td>
+            <td >{{item.cname}}</td>
+            <td >{{item.classes}}</td>
+            <td>{{item.semester}}</td>
+            <td>{{item.ctype}}</td>
+            <td>{{item.hours}}</td>
+            <td>{{item.credit}}</td>
+        </tr>
+        <tr>
+            <td colspan="7">
+                <button style="border-radius: 10px; background-color: #FFB6C1;" @click="lastpage">上一页</button>{{pages}}/{{pagesnum}}<button style="border-radius: 10px; background-color: #FFB6C1;" @click="nextpage">下一页</button>
+            </td>
+        </tr>
+    </table>
+    </div>
+</div>
+
+
+
+
+<script>
+    var app = new Vue({
+        el:"#app",
+        data:{
+            crouse:[],
+            input:'',
+            pages:1,
+            pagesnum:1,
+            nextd:true,
+            istable:true,
+            timer:'',
+            selectsemester:'',
+            myselectsemester:'',
+            selectclasses:'',
+            myselectclasses:'',
+            isloading:true,
+        },
+        methods: {
+            findselectsemester(){
+                axios.post("teachercrousesemester").then(yc=>{
+                    if (yc.data.code==1){
+                        this.selectsemester = yc.data.data;
+                    }
+                })
+            },
+            xs(){
+                this.findselectclasses();
+                this.findAll()
+            },
+            findselectclasses(){
+               var params = new URLSearchParams();
+               params.append("semester",this.myselectsemester)
+                axios.post("teachercrouseclasses",params).then(yc=>{
+                    if (yc.data.code==1){
+                        this.selectclasses = yc.data.data;
+                    }
+                })
+            },
+            findAll() {
+                var a = new Array();
+                var params = new URLSearchParams();
+                params.append("semester",this.myselectsemester);
+                params.append("classes",this.myselectclasses);
+                params.append("param", this.input);
+                params.append("pages",this.pages);
+                axios.post("teacherfindcrouse", params).then(yc => {
+                    if (yc.data.code == 0) {
+                        if (this.nextd==true){
+                            this.crouse=a;
+                            this.nextd =false;
+                        }else {
+                            this.$message({
+                                type:'warning',
+                                message:yc.data.msg
+                            })
+                            this.nextd =false;
+                        }
+                    } else {
+                        this.pagesnum = yc.data.code;
+                        this.crouse = yc.data.data;
+                        this.nextd =false;
+                        if (this.isloading){
+                            this.findselectclasses();
+                            this.findselectsemester();
+                        }
+                        this.isloading=false;
+                    }
+                })
+            },
+            Insert(){
+                this.isinsert=true;
+            },
+            lastpage(){
+                if (this.pages-1==0){
+                    this.$message({
+                        type: 'warning',
+                        message: '已是首页'
+                    });
+                }else{
+                    this.pages = this.pages-1;
+                    this.findAll();
+                }
+            },
+            nextpage(){
+                if (this.pages>=this.pagesnum){
+                    this.$message({
+                        type: 'warning',
+                        message: '已是末页'
+                    });
+                }else {
+                    this.pages = this.pages+1;
+                    this.findAll();
+                }
+            },
+            get(){
+                this.istable=false;
+            },
+        },
+        mounted: function(){
+            this.findAll();
+            this.timer = setTimeout(this.get, 300);
+        },
+        beforeDestroy() {
+            clearTimeout(this.timer);
+        }
+
+    })
+</script>
+
+
+
+
+
+</body>
+</html>

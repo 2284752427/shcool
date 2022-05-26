@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!-- 引入样式 -->
+    <script type="text/javascript" src="js/jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="js/vue.js"></script>
+    <script type="text/javascript" src="js/axios.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+        td {
+            text-align: center;
+            font-weight: bold;
+            /*font-size: 10px;*/
+            color: gray;
+
+        }
+
+        .editui {
+            position: absolute;
+            left: 300px;
+            top: 50px;
+            background-color: rgba(255, 204, 204, 0.9);
+            width: 400px;
+            border-radius: 10px;
+        }
+
+        .insert {
+            position: absolute;
+            left: 300px;
+            top: 50px;
+            background-color: rgba(255, 204, 204, 0.9);
+            width: 400px;
+            border-radius: 10px;
+        }
+
+        .editui p {
+            text-align: center;
+        }
+
+        .insert p {
+            text-align: center;
+        }
+
+        /*.editui span {*/
+        /*    position: absolute;*/
+        /*    left: 375px;*/
+        /*    border-radius: 50%;*/
+        /*    text-align: center;*/
+        /*    width: 20px;*/
+        /*    border: 1px paleturquoise solid;*/
+        /*    cursor: pointer;*/
+
+        /*}*/
+
+        /*.insert span {*/
+        /*    position: absolute;*/
+        /*    left: 375px;*/
+        /*    border-radius: 50%;*/
+        /*    text-align: center;*/
+        /*    width: 20px;*/
+        /*    border: 1px paleturquoise solid;*/
+        /*    cursor: pointer;*/
+        /*}*/
+
+        .editui p input {
+            border-radius: 10px;
+            height: 30px;
+            width: 200px;
+            outline: medium;
+        }
+
+        .insert p input {
+            border-radius: 10px;
+            height: 30px;
+            width: 200px;
+            outline: medium;
+        }
+
+        .editui p input:focus {
+            border: 1px solid deepskyblue;
+        }
+
+        .insert p input:focus {
+            border: 1px solid deepskyblue;
+        }
+
+        .editui button {
+            border-radius: 10px;
+            width: 100px;
+            outline: medium;
+            cursor: pointer;
+        }
+
+        .insert button {
+            border-radius: 10px;
+            width: 100px;
+            outline: medium;
+            cursor: pointer;
+        }
+
+        .editui p label {
+            font-size: 20px;
+            font-family: "Courier New";
+        }
+
+        .insert p label {
+            font-size: 20px;
+            font-family: "Courier New";
+        }
+
+        #caozuo {
+            position: relative;
+            margin-left: 50px;
+        }
+
+        #caozuo button {
+            width: 100px;
+            height: 30px;
+            border-radius: 10px;
+            color: black;
+            background-color: #FFB6C1;
+            text-align: center;
+            border: 1px solid black;
+            line-height: 0px;
+        }
+
+        #sousuo {
+            /*position: absolute;*/
+            /*left: 620px;*/
+            /*top: 0px;*/
+            /*margin-left: 720px;*/
+            margin-top: 10px;
+            margin-left: 50px;
+        }
+    </style>
+</head>
+
+<body>
+<div id="app">
+    <div id="caozuo">
+        <el-button @click="selectAll()">全选</el-button>
+        <el-button @click="noselect()">取消选择</el-button>
+        <el-button type="text" @click="open">删除</el-button>
+        <el-button @click="Insert()">添加</el-button>
+    </div>
+
+    <div id="sousuo">
+        <template>
+            <el-select v-model="myselectxq" clearable placeholder="请选择学年" @change="findAll()">
+                <el-option
+                        v-for="item in selectxq"
+                        :value="item">
+                </el-option>
+            </el-select>
+        </template>
+        <template>
+            <el-select v-model="myselectsjbj" clearable placeholder="请选择班级" @change="findAll()">
+                <el-option
+                        v-for="item in selectsjbj"
+                        :value="item">
+                </el-option>
+            </el-select>
+        </template>
+        <el-input v-model="input" placeholder="请输入班级" style="width: 200px"></el-input>
+        <el-button icon="el-icon-search" circle
+                   style="background-image: linear-gradient(-225deg, #FFE29F 0%, #FFA99F 48%, #ff719a 100%);"
+                   @click="findAll()"></el-button>
+    </div>
+    <table style="width:1230px;margin-top: 30px" v-loading="istable">
+        <tr>
+            <td>选择</td>
+            <td>班级</td>
+            <td>学年</td>
+            <td>缴纳费用</td>
+            <td>教材费用</td>
+            <td>操作</td>
+        </tr>
+        <tr v-for="(item,index) in cost">
+            <td><input type="checkbox" :value="item" v-model="select"></td>
+            <td>{{item.classes}}</td>
+            <td>{{item.semester}}</td>
+            <td>{{item.allcost}}</td>
+            <td>{{item.bookcost}}</td>
+            <td>{{item.surpluscost}}</td>
+            <td>
+                <el-button
+                        style="background-image: linear-gradient(-225deg, #FFE29F 0%, #FFA99F 48%, #ff719a 100%);border-radius: 10px;outline: medium"
+                        @click="edit(index);">编辑
+                </el-button>&nbsp;&nbsp;
+            </td>
+        </tr>
+        <tr>
+            <td colspan="5">
+                <button style="border-radius: 10px; background-color: #FFB6C1;" @click="lastpage">上一页</button>
+                {{pages}}/{{pagesnum}}
+                <button style="border-radius: 10px; background-color: #FFB6C1;" @click="nextpage">下一页</button>
+            </td>
+        </tr>
+    </table>
+    <div class="editui" v-if="isedit">
+        <p>
+            <label>班&nbsp&nbsp&nbsp级：</label>
+            <el-input type="text" disabled="true" v-model="editcost.classes"></el-input>
+        </p>
+        <p>
+            <label>学&nbsp&nbsp&nbsp年：</label>
+            <el-input type="text" disabled="true" v-model="editcost.semester"></el-input>
+        </p>
+        <p>
+            <label>缴纳费用：</label>
+            <el-input type="text" v-model="editcost.allcost"  @input="findsurpluscost"></el-input>
+        </p>
+        <p>
+            <label>教材费用：</label>
+            <el-input type="text" v-model="editcost.bookcost" @input="findsurpluscost"></el-input>
+        </p>
+        <p>
+            <label>结余费用：</label>
+            <el-input type="text" disabled="true" v-model="editcost.surpluscost"></el-input>
+        </p>
+        <p>
+            <button @click=" xedit">取消</button>
+            <button @click=" editSubmit">提交</button>
+        </p>
+    </div>
+    <div class="insert" v-if="isinsert">
+        <p>
+            <label>班&nbsp&nbsp&nbsp级：</label>
+            <el-input type="text" v-model="insertcost.classes"></el-input>
+        </p>
+        <p>
+            <label>学&nbsp&nbsp&nbsp年：</label>
+            <el-input type="text" placeholder="例如2020-2021-1" v-model="insertcost.semester"></el-input>
+        </p>
+        <p>
+            <label>缴纳费用：</label>
+            <el-input type="text" v-model="insertcost.allcost"  @input="findinsetsurpluscost"></el-input>
+        </p>
+        <p>
+            <label>教材费用：</label>
+            <el-input type="text" v-model="insertcost.bookcost" @input="findinsetsurpluscost"></el-input>
+        </p>
+        <p>
+            <label>结余费用：</label>
+            <el-input type="text" disabled="true" v-model="insertcost.surpluscost"></el-input>
+        </p>
+        <p>
+            <button @click="xinsert">取消</button>
+            <button @click="insertSubmit">提交</button>
+        </p>
+    </div>
+</div>
+
+<script>
+    var app = new Vue({
+        el: "#app",
+        data: {
+            cost: [],
+            editcost: {classes: '', semester: '', allcost: '', bookcost: '', surpluscost: ''},
+            insertcost: {classes: '', semester: '', allcost: '', bookcost: '', surpluscost: ''},
+            input: '',
+            pages: 1,
+            pagesnum: 1,
+            select: [],
+            istable: true,
+            isedit: false,
+            isinsert: false,
+            timer: '',
+            nextd: true,
+            selectsjbj: '',
+            myselectsjbj: '',
+            selectxq: '',
+            myselectxq: ''
+
+        },
+        methods: {
+            findAll() {
+                var a = new Array();
+                var params = new URLSearchParams();
+                params.append("classes", this.myselectsjbj);
+                params.append("semester", this.myselectxq);
+                params.append("param", this.input);
+                params.append("pages", this.pages)
+                axios.post("plusteacherfindcost", params).then(yc => {
+                    if (yc.data.code == 0) {
+                        if (this.nextd == true) {
+                            this.cost = a;
+                        } else {
+                            this.$message({
+                                type: 'warning',
+                                message: yc.data.msg
+                            });
+                        }
+                        this.nextd = false;
+                    } else {
+                        this.pagesnum = yc.data.code;
+                        this.cost = yc.data.data;
+                        this.nextd = false;
+                    }
+                })
+            },
+            findsjbj() {
+                var params = new URLSearchParams();
+                axios.post("plusteacherfindcostclasses", params).then(yc => {
+                    if (yc.data.code == 1) {
+                        this.selectsjbj = yc.data.data;
+                    }
+                })
+            },
+            findxq() {
+                var params = new URLSearchParams();
+                axios.post("plusteacherfindcostsemester", params).then(yc => {
+                    if (yc.data.code == 1) {
+                        this.selectxq = yc.data.data;
+                    }
+                })
+            },
+            edit(index) {
+                var s = this.cost;
+                for (var i = 0; i < this.select.length; i++) {
+                    if (this.select[i] == s[index]) {
+                        this.editcost = s[index];
+                        this.isedit = true;
+                        return;
+                    }
+                }
+                this.$message({
+                    type: 'warning',
+                    message: '请选择要编辑的行!'
+                });
+            },
+            xedit() {
+                this.isedit = false;
+                this.findAll();
+            },
+            findsurpluscost(){
+                this.editcost.surpluscost = (this.editcost.allcost-this.editcost.bookcost).toFixed(2);
+            },
+            editSubmit() {
+                var params = new URLSearchParams();
+                params.append("classes",this.editcost.classes);
+                params.append("semester",this.editcost.semester);
+                params.append("allcost",this.editcost.allcost);
+                params.append("bookcost",this.editcost.bookcost);
+                params.append("surpluscost",this.editcost.surpluscost);
+                axios.post("pluseditcost", params).then(yc => {
+                    if (yc.data.code == 1) {
+                        this.$message({
+                            type: 'success',
+                            message: '修改成功!'
+                        });
+                        this.isedit = false;
+                        this.findAll();
+                    } else {
+                        this.$message({
+                            type: 'error',
+                            message: yc.data.msg
+                        });
+                    }
+                })
+                var a = new Array();
+                this.select = a;
+            },
+
+            selectAll() {
+                this.select = this.cost;
+            },
+            noselect() {
+                var b = new Array();
+                this.select = b;
+            },
+            xinsert() {
+                this.isinsert = false;
+                this.findAll();
+            },
+            findinsetsurpluscost(){
+                this.insertcost.surpluscost = (this.insertcost.allcost-this.insertcost.bookcost).toFixed(2);
+            },
+            insertSubmit() {
+                var params = new URLSearchParams();
+                params.append("classes",this.insertcost.classes);
+                params.append("semester",this.insertcost.semester);
+                params.append("allcost",this.insertcost.allcost);
+                params.append("bookcost",this.insertcost.bookcost);
+                params.append("surpluscost",this.insertcost.surpluscost);
+                axios.post("plusinsertcost", params).then(yc => {
+                    if (yc.data.code == 1) {
+                        this.findAll();
+                        this.$message({
+                            type: 'success',
+                            message: '添加成功!'
+                        });
+                    } else {
+                        this.$message({
+                            type: 'error',
+                            message: yc.data.msg
+                        });
+                    }
+
+                });
+                var x = new Array();
+                this.select = x;
+                this.insertcost =x;
+            },
+            Insert() {
+                this.isinsert = true;
+            },
+            lastpage() {
+                if (this.pages - 1 == 0) {
+                    this.$message({
+                        type: 'warning',
+                        message: '已是首页!'
+                    });
+                } else {
+                    this.pages = this.pages - 1;
+                    this.findAll();
+                }
+            },
+            nextpage() {
+                if (this.pages >= this.pagesnum) {
+                    this.$message({
+                        type: 'warning',
+                        message: '已是末页!'
+                    });
+                } else {
+                    this.pages = this.pages + 1;
+                    this.findAll();
+                }
+            },
+            get() {
+                this.istable = false;
+            },
+            open() {
+                if (this.select == undefined || this.select == null || this.select <= 0) {
+                    alert("请选择要删除的栏目！")
+                    return;
+                }
+                this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning',
+                    center: true
+                }).then(() => {
+
+                    var a = new Array();
+                    var b = new Array();
+                    for (let i=0; i<this.select.length; i++){
+                        a[i] = this.select[i].classes;
+                        b[i] = this.select[i].semester;
+                    }
+                    var params = new URLSearchParams();
+                    params.append("classes", a);
+                    params.append("semester", b);
+                    axios.post("plusdeletecost", params).then(yc => {
+                        if (yc.data.code == 1) {
+                            if (this.pages > 1) {
+                                this.pages--;
+                            }
+                            this.nextd = true;
+                            this.findAll();
+                            this.$message({
+                                type: 'success',
+                                message: '删除成功!'
+                            });
+                        } else {
+                            this.$message({
+                                type: 'erroe',
+                                message: yc.data.msg
+                            });
+                        }
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+        },
+        mounted: function () {
+            this.findAll();
+            this.findsjbj();
+            this.findxq();
+            this.timer = setTimeout(this.get, 300);
+        },
+        beforeDestroy() {
+            clearTimeout(this.timer);
+        }
+    })
+</script>
+</body>
+</html>
