@@ -250,6 +250,7 @@
                 axios.post("geturl").then(yc=>{
                     if (yc.data.code==1){
                         this.messages.photo = "http://localhost/img/"+yc.data.data;
+                        // this.messages.photo = "http://182.92.151.98:8080/images/"+yc.data.data;
                     }
 
                 })
