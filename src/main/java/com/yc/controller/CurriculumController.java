@@ -33,7 +33,7 @@ public class CurriculumController {
     }
     @RequestMapping("/studentfindaweek")
     public JsonModel studentfindcurri( String week, String semester, JsonModel jm,HttpSession session){
-        String cid = ((student)session.getAttribute("loginadmin")).getStudentid();
+        String cid = ((student)session.getAttribute("loginadmin")).getClasses();
         List<cname> list=getclassBiz.findaweek(cid,week,semester);
         if (list==null){
             jm.setCode(0);
