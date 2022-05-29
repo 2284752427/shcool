@@ -216,7 +216,7 @@
             edit(index) {
                 var s = this.grades;
                 for (var i = 0; i < this.select.length; i++) {
-                    if (this.select[i].studentid==s[i].studentid && this.select[i].courseid==s[i].courseid) {
+                    if (this.select[i].studentid==s[index].studentid && this.select[i].courseid==s[index].courseid) {
                         this.studentsgrades = s[index];
                         this.isedit=true;
                         return;
