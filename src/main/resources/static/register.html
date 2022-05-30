@@ -38,6 +38,7 @@
             border-radius: 10px;
             text-align: center;
             margin-left: 150px;
+            cursor: pointer;
         }
 
         #email {
@@ -129,6 +130,10 @@
                 }
             },
             register() {
+                if (this.registerform.username.length<5 || this.registerform.username.length>10){
+                    this.$message.error("非法用户名！");
+                    return;
+                }
                 if (this.registerform.pwd != this.registerform.repwd) {
                     this.$message({
                         type: 'error',
