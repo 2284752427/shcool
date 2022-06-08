@@ -17,7 +17,7 @@ public class EmailVodeServlet {
             email.setHostName("smtp.qq.com");
             email.setCharset("utf-8");//设置发送的字符类型
             email.addTo(sendperson);//设置收件人
-            email.setFrom("2284752427@qq.com", "米哈游");//发送人的邮箱为自己的，用户名可以随便填
+            email.setFrom("2284752427@qq.com", "小陈教务系统");//发送人的邮箱为自己的，用户名可以随便填
             email.setAuthentication("2284752427@qq.com", "zcckjmhiedbuecic");//设置发送人到的邮箱和用户名和授权码(授权码是自己设置的)
             email.setSubject("验证码");//设置发送主题
             Random r = new Random();
