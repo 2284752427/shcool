@@ -28,7 +28,7 @@ import java.util.Date;
 @SpringBootApplication
 @MapperScan("com.yc.mapper")
 @EnableTransactionManagement
-@ServletComponentScan
+@ServletComponentScan   
 public class Application implements WebMvcConfigurer{
     @Autowired
     MywebFilter mywebFilter;
